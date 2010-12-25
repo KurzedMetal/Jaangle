@@ -1,0 +1,78 @@
+GENIKA
+	1. Search sto Google         "A PERFECT CIRCLE" "orestes lyrics"
+		Alternate            allintitle: orestes lyrics "A PERFECT CIRCLE " (pio akribes
+	2. Ta pairneis me tis seira koitontas ton tilte mia "white - list"
+	3. An mesa sti white list tote anoigeis
+	4. Iparxoun 
+		a. aftes me ta <pre ... </pre>
+		b. aftes me ta <br> (Psaxneis to proto <br> pou aristerakai deksia exei keimeno & to telefeo <br> pou kanei 		to idio (allios Briskeis to megalitero keimeno me mono text + <br> mesa ... einai ta lyrics
+
+lyricsFreak
+	Start: <div class="lyrics">
+	End: </div> 
+	Inside: (Normal Clean With <br> as newLine)
+sing365
+	Start: xmmm
+	End: xmmm
+	Inside: (Normal Clean With <br> as newLine)
+inlyrics
+	Start: <pre>
+	End: </pre>
+	Inside: (Normal Clean With <br> as newLine)
+	HITS:
+	"Clash" "Know your rights lyrics" site:www.inlyrics.com
+	"A PERFECT CIRCLE" "orestes lyrics" site:www.inlyrics.com
+	* "gentleman" "dem gone lyrics" site:www.inlyrics.com
+	* "deus" "lets get lost lyrics" site:www.inlyrics.com
+	"doors" "roadhouse blues" site:www.inlyrics.com
+	*"turbonegro" "bad mongo" site:www.inlyrics.com
+
+
+mp3lyrics
+	Start: <td ID="lyric"
+	End: </td>
+	Inside: (Normal Clean With <br> as newLine)
+lyrics007
+	Start: xmmm
+	End: xmmm
+	Inside: (Normal Clean With <br> as newLine)
+
+lyricsondemand	
+	Start: 1. class="NoUnderPlain" 2. <Font
+	End: <p>
+seeklyrics
+	Start <pre>
+	End: </pre>
+	Inside: Nothing!!(Keep The lfs)
+crazyLyrics
+	images/pt_flag.gif - Verdana
+	</font>
+lyrics.duble.com
+	</font></i></td></tr></table></td></tr><tr><td>
+	</td>
+www.lyricsdownload.com
+	<font class="style21">
+
+
+Clash - Know your rights
+(9184)	http://www.inlyrics.com/lyrics/C/Clash/3047.html
+(9423)	http://www.lyricsfreak.com/c/clash,-the/31891.html
+(14068) http://www.sing365.com/music/lyric.nsf/Know-Your-Rights-lyrics-The-Clash/461A42C67B9ECAC6482568AB002FF385
+(17976)	http://www.mp3lyrics.org/c/clash/know-your-rights/
+	BEST: inLyrics
+
+A PERFECT CIRCLE - orestes
+(8192)	http://www.lyricsondemand.com/a/aperfectcirclelyrics/oresteslyrics.html
+(9253)	http://www.lyricsfreak.com/p/perfect-circle/106537.html
+(9977)	http://www.seeklyrics.com/lyrics/A-Perfect-Circle/Orestes.html
+(17245) http://www.mp3lyrics.org/a/a-perfect-circle/orestes/
+(14365) http://www.sing365.com/music/lyric.nsf/Orestes-lyrics-A-Perfect-Circle/055D1AFF9BB9DBB148256BD600052074
+(16566) http://www.lyrics007.com/A%20Perfect%20Circle%20Lyrics/Orestes%20Lyrics.html
+
+
+deus lets get lost lyrics
+(6861)	http://lyrics.duble.com/lyrics/D/deus-lyrics/deus-lets-get-lost-lyrics.htm
+(17101) http://www.crazylyrics.net/lyrics-535-lets_get_lost-deus.html
+
+gentleman dem gone
+(25286)	http://www.lyricsdownload.com/gentleman-dem-gone-lyrics.html

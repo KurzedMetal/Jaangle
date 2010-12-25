@@ -1,0 +1,20 @@
+//Sample Music Query to Nirvana
+http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=0F3QPJP4DBQWF2PAK902&Operation=ItemSearch&SearchIndex=Music&Keywords=Nirvana
+
+//2 words
+http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=0F3QPJP4DBQWF2PAK902&Operation=ItemSearch&SearchIndex=Music&Keywords=Pink%20Floyd
+
+//With &ResponseGroup=Request,Small,Medium,Large etc
+http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=0F3QPJP4DBQWF2PAK902&Operation=ItemSearch&SearchIndex=Music&Keywords=Nirvana&ResponseGroup=Small
+
+
+
+//Best for search untill now
+http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=0F3QPJP4DBQWF2PAK902&Operation=ItemSearch&SearchIndex=Music&Artist=Nirvana&ResponseGroup=Medium,Tracks
+
+
+//ItemLookup
+http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=0F3QPJP4DBQWF2PAK902&Operation=ItemLookup&ItemId=B000003TB9&ResponseGroup=Medium,Tracks
+
+//Requesting Other pages (2nd)
+http://webservices.amazon.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=0F3QPJP4DBQWF2PAK902&Operation=ItemSearch&SearchIndex=Music&Artist=Nirvana&ResponseGroup=Medium&ItemPage=2

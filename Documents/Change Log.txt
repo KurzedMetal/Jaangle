@@ -1,0 +1,688 @@
+#2006-02-03
+	- Polles allages. Tora pleon katebazei AllMusic se neo thread.. stelnontas minimata 
+		SendMessage sto idio to class (Download Manager) gia na kanei telika NotifyObservers 
+		apo to Main Thread. 
+	- TODO: To idio tha prepei na ginei kai ston CollectionManager kai na figei o 
+		ilithios kodikas sta alla controls pou to girnaei sto idio Thread 
+	- TODO: Sto CollectionManager na proipologisei to xrono pou xreiazete? (Kalitera oxi)
+	- To PictureWnd kai to List Header ipestisan lifting me KeepAspectRatio kai
+		metablito megethos (oxi panta tetragono)
+	- Polla bugs kai kapoia alla pou iparxoun.
+	- Intoduced to WaitForSingleObject, CreateEvent, ResetEvent, SetEvent klp
+	- Kapies allages sto InfoTemplate (gia na dexete kalitera tis Info)
+	
+#2006-02-01
+	- Mia mikri allagi sto TreeView (metaferthike o kodikas tou NotifySelectionChanged)
+	- Mia Allagi tou Refresh Timer apo 50->300 ms tou MainTreeView
+	- Mpike mia nea SetFieldValue pou pairnei LPCTSTR gia parametro.... meta apo afta
+		allaksa ola ta castings apo CString pou eixa (WAR:!!! Mporei na odogisei se bug)
+		Allaksa kai tin AddEntry tou DownloadLogTableSchema se LPCTSTR (apo CString)
+	- Mpike rithmisi sta Colors (AppSettings) gia to MainListViewCtrl
+	- Mpike rithmisi sta Colors (AppSettings) gia to MainTreeViewCtrl
+	
+	
+	
+#2006-01-31
+	- Allakse ligo to ListHeaderCtrl etsi oste na deixnei eikona mono otan exei. Epipleon
+		mpike mia kathisterisi 100ms sto Update tou gia na mi kathisterei tous allous. 
+		Petaxtike kai i photo me to erotimatiko
+	- Egine O InformationManager san Interface gia ola ta controls... Oloi ton pairnoun apo
+		ton ObjectFacrory. Aftos xeirizete esoterika ton StorageManager kai ton 
+		DownloadManager
+	- Peiraxtike ligo o StorageManager me nees functions & liges allages sto IF
+	- (OnWork) o DownloadManager. Afto koitaei ena neo Table "DownloadLog" gia waiting
+		Jobs. An dei kapoia ksekinaei.. Bgainei apo to Subject opote kanei NotifyObservers
+		Profanos kai egine ena Neo DownloadsLogTableSchema
+	- To SetPicture / RemovePicture gia Artists-Albums doulebei apo to Tree
+	- Ena buggaki apo to PictureWnd lithike (sto OnPaint mpike CClientDC)
+	
+#2006-01-30
+	- Kapies allages - Diorthoseis sto MainListCtrl oson anafora to "AlwaysShowSelection"
+		pou eixe kapoia problimata. Ola ksekatharistikan
+	- O Player prepei na einai etoimos tora
+	- Mpike owner draw ListView
+	- Mpikan to Load/Save Settings sto MainTree..
+	- Mpike Timer gia na mi ginete sinexeia Update apo ta alepallila minimata tou Media Player
+	- Mpikan xromatista ta Splitters
+	- Mpike beltistopoiisi (SetRedraw(FALSE)) sto PlayListListCtrl
+	- TODO: Abrio ksekinaei ta
+	[I]	a.
+			1. Internet Downloading
+			2. Update Info Presentation (Na mi fenete Picture an den iparxei)
+			3. Set Info Function
+		b.
+			1. Tag Editing
+			2. Properties Pages (Artist - Album - Track)
+			3. Drop sto TreeView
+		c. 
+			1. New Toolbar (me buttons - search text)
+		d. 
+			1. Update Database
+		e.
+			1. Options
+		f.
+			1. Audio-Video Filtering
+
+		-------------beta 1
+	[II]
+		1. New Search On Lyrics - Reviews
+		2. AboutDlg
+		3. Check For Updates func
+		4. ToolTips
+		5. Bug Fixes
+		-------------beta 2
+	[III]
+		1. Final View Scheme
+		2. Mutlilang (Eng- Greek)
+		3. BugFixes
+		4. NSIS Installer
+		-------------beta 3
+	
+#2006-01-27
+	- Mikrobeltistopoiiseis tou rendering sto ListView-TreeView.. Paratirisa oti kathisterei
+		ligo i apokrisi se sxesi me to MediaPlayer (Library)... Ftene ta ownerdraw tou Tree & tou List
+		& ta picture - HTML
+	- Egine to DelegatedOleDropTarget kai mpike sta common sources...
+	- Egine to CPlayListListCtrl pou bgaine apo CListCtrl + DelegatedOleDropTarget 
+		pou ensomatothike sto CPlayListCtrl ...
+	- Mpikan eno soro akoma functions sto player opos Volume - shuffle klp 
+		(MediaPlayer Interface updated) 
+	- Mpike to CPlayListListCtrl sto TS alla exei problimatakia (pou tha lithoun ... kirios me
+		ta Interfaces pou den einai etoima .. mporei na allakso ta Events i na prokalo
+		kathisterisi me Timer)
+
+#2006-01-26
+	- O Media Player sxedon ensomatothike me tin ipoloipi efarmogi
+	- Allaksan ta Interface tou Media Player kai pleo pernai to 
+		Abstract MediaPlayer se olo to kosmo  (ObjFactory) 
+		ektos apo to MediaPlayerControl pou kserei kai to ftiaxnei
+	- Mpike kai to Drag apo to MainListView
+	
+#2006-01-25
+	- Exei ginei o Media Player 80%(se alli efarmogi). Poli talaiporia me to "none" UI mode pou
+		de paizei sosta... Eite de fenete -- eite kanei flicker me to background
+	- Drag Drop Implemented se ListMediaControl (To playlist to kratari o MediaPlayer)
+	- To HTML Control egine mazi me kapoious managers (opos afton pou ftiaxnei tin HTML)
+	- To TreeView oloklirothike 95% me tis nees Functions Artist/Album Genres/Artists
+		Years/Albums
+	- Egine kai o TreeHeader me ta menoudakia tou
+	- Allakse to Interface se Tree/MediaPLayer \\ HTML-Picture/ListView
+	- Egina kapoies dokimes me ta menu (gia to pos einai kalitera na ginoun)
+	- Ascolithika Emperistatomena me to COM .. eftiaksa kai ComServer (kapou crasharei)
+		..megalo kerdos kai afto
+	- Plisiazoume!!!
+	Apo kapoio paliotero TODO:
+		DONE- TODO: To perasma ton Statistics->HistXXX tables
+		DONE- TODO: allagi sto List ton icons/ rating handling/ Audio-Video Icon is Wrong
+		DONE- TODO: progress Bar pano sto Status
+		DONE- TODO: Other Tree Modes Interface & Implementation
+		DONE- TODO: AllMusic Downloading (CP: http://www.codeproject.com/internet/OfflineBrowserWinInet.asp)
+		DONE- TODO: Lyrics Downloading
+		80%- TODO: Own MediaPlayer
+		80%- TODO: Info View
+		70%- TODO: Multithreading continous Database Refresh
+		70%- TODO: Find Dialog & Find Text Box On the Toolbar
+		50%- TODO: To grapsimo ton Rating - Personal sto Tag ton mp3
+		30%- TODO: to wmaMediaFile
+		30%- TODO: Avi/Mpeg Support
+		- TODO: Real Tagging
+		- TODO: Properties Gia Tracks - Artists - Albums - Genres, Multiple Tracks me 
+			Tagging + Statistics
+		- TODO: ToolTips gia Tracks - Artists - Albums - Genres
+		- TODO: Collection Statistics Dlg
+		- TODO: Options Dlg
+		- TODO: SetUp Filters Dlg (Show only new , Rating > x klp)
+		- TODO: Fuzzy Search (CP: http://www.codeproject.com/string/dmetaphone6.asp?print=true)
+		- TODO: Amazon Downloading
+		- TODO: Multithreading Downloading
+		- TODO: About Dlg
+		- TODO: Final Graphics & Color scheme
+		- TODO: MultiLang
+		- TODO: Exchange Tracks with users
+		- TODO: Upload Files to an SQL Server. With php search function
+		- TODO: AutoUpdater
+		- TODO: NSis Installer
+	
+#2006-01-16
+	- Allakse to define tou logger Apo LOG -> TRACE kai egine simbato me to original TRACE
+	- Mporei pleon na kanei handle kai Logging diaforetika apo to TCHAR... an einai
+		unicode -> mporei kai char eno diaforetika kai wchar_t
+	- O Logger prosthetei \r\n opou xriazetai (gia na fenete sosta to keimeno)
+	- Kapoies mikro diorthoseis kai allages sto Neo ObjectPattern
+	- Efige to Global filter - Antikatastathike apo to TracksFilter
+	- Efigan ta VariousItemInfo
+	- Beltipotjike to control PictureWnd gia na paizei sosta me to AspectRatio (Avrio tha mpei)
+
+#2006-01-15
+	- Neo Generic Observer Pattern
+	- Petaxtike to TennSpiritSubject.
+	- Kata sinepeia allaksan oles oi klaseis pou to xrisimopoiousan kai poli peisotero
+		to CMainListControl
+	- Afto ixe os einpeia na ksanadouleftei to MainTracksView kai na ginei poli kalitero
+		alla kai na figei to GlobalFilter
+		
+#2006-01-(12-14)
+	-Egine nea efarmogi kai tora katebainoun
+		- AMG (Artist review - Artist picture - Album Review - Album Picture - Albums List
+			Tracks List
+		- Freecovers .. I megali Album Photo
+		- Google.. Ta lyrics
+	- Gia na ginei afto dimiourgithikan 2 nees klasseis CNetSession - CNetDownoloader
+		pou kanoun oli tii NET doulia me Adv. xaraktiristika opos
+			- Post data
+			- Handle cookies
+	
+#2006-01-11
+	- Egine programma pou katebazei AMG Info
+	- Koita episis
+		1. http://www.freecovers.net/
+		2. amazon
+		3. Search for lyrics
+		
+#2006-01-09
+	- To HistotyList meta apo xaza apo do xaza apo kei teleiose gia afti ti fasi( Doulia pali)
+
+	
+#2006-01-04
+	- Sxedon Teleiose to History. Thelei akoma:
+		1. Taktopoiisi ton koinon leitourgion gia ta History List Controls
+		2. Taktopoiisi ton Koinon leitourgion gia ta History View Schemas
+		3. To PrepareRank prepei na ginete kathe fora pou allazei to Start-End Date kai
+			oxi mono stin arxi
+		4. Eiksatiki epeksergasia giati einai athlio tora
+		5. Ta menou na douleboun
+	- To Ranking meso SQL aporifthike os APELPISTIKA ARGA akoma kai an eftiaxna views
+	
+			
+#2005-12-28
+	- Prostethikan ta ViewSchemas gia to HistoryListControl
+	- Psaksimo se SQL gia ipologismo tou Ranking ton dedomenon
+	- Doulia sto HistoryDlg
+
+#2005-12-27
+	- Internal Allages sta ViewSchema
+	- Prostethike megalo meros tis leitourgikotitas sto Search
+	- Arxise to HistoryDlg
+	
+#2005-12-26
+	- VividTree Reconstruction
+	
+#2005-12-25
+	# Bug me to CriticalSection sto DBEngine (aionio bug pou lithike) Elpizo na min crasharei pote
+		pali
+	# Bug me to Query sto Refresh tou List tou CollectionDlg. Itan Lathos kai gia afto ebgaze lathos
+		apotelesmata otan ekana Add New Folder
+	# Ta colors sto MainListView
+	
+#2005-12-23
+	- Mia akomi allagi sta eikonidia tou Main List View + Sorting Bug (mpike otan peras ta xaza
+		sto TeenSpiritSubject)
+	# Bug. To Id3Lib sto Link ithele kai shortFilenName ektos apo TCHAR->CHAR.
+		Peiraxtike to Id3LibMediaFile
+	# Fagame ena Crash PALI apo to COM .. katei de paizei kala me ta Single Locks
+		Ebala xtra Diagnostika.. kai brethike afto
+			1081.313ms [-L1] [ 734] Enter CS in CDBEngine::ReleaseRecordset
+			1081.313ms [-L1] [MAIN] Enter CS in CDBEngine::ReleaseRecordset
+			1081.313ms [-L1] [ 734] Exit CS in ReleaseRecordset
+			1081.313ms [-L1] [MAIN] Exit CS in ReleaseRecordset
+
+#2005-12-22
+	# Diorthothike Buggaki sto CMainListCtrl::OnEraseBkgnd
+	# Lithikan kapoia psilobuggekia sto Import New Tracks to opoio fenete na doulebei
+	- Mikroallage sto AutoCreate tou LogViewer 
+	+ Doulebei episis ta Delete / Update / DeepUpdate sto Collection Manager
+	- Nea Eikonidia sto MainListCtrl + Neo Column -> Rating
+	+ Egine to CSearchDlg (Thelei Doulia bebea)
+	- Egine to TeenSpiritSubject kai efige kodikas apo to TeenSpiritDlg. Me afto to tropo elpizo
+		na xrisimpoiiso katefthian to MainListView & sto CSearchDlg
+	- Osoi Ekanan to "((CTeenSpiritDlg*) GetSubject())->" tora kanoun ((CTeenSpiritSubject*) GetSubject())->
+	- TODO: Na figei kapoios kodikas apo to CMediaPlayerCtrl kai na paei sto MediaPlayer etsi oste
+		to TeenSpiritSubject na blepei Abstract MediaPlayer
+
+#2005-12-21
+	+ To LOGP (Log Position sto ALog) 
+	+ [MAIN] when you re running on your main thread
+	
+	
+#2005-12-20
+	- Metafora pali se VS2005. Problima me to Manifest lithike (kapio error sto project file)
+	- Ola ta arxeia se ena dir (copy ton Common Sources) gia na ta peirazo monos mou
+	# To Duration se kapoio arxeio dinei poli megali timi kai kolaei to Recordset. Mpike Elegxos
+		sto UpdateEntry
+	- Allages sto AutoWindowViewer gia na meionei to keimeno tou otan kseperasei to orio
+		 
+#2005-12-19
+	- Metafora sto VS2005.. Ebala kapoia Flags sto Preprocessor gia na mi fonazei
+	- Sto VS2005 den epeze opos sto VS2003 to xroma tou Log Window. Opote ekana SubClass
+		me SetWindowLong ke peiraksa tin WM_ERASEBKGND tou Edit & tin antistoixi tou
+		Window
+	- Ebala kapoia xaza sto Auto Window Viewer opos Icon klp
+		
+#2005-12-18
+	- Eginan kai alla polla ston ALog Debugger opos o AutoWindowViewer
+	- Prospathisa na to balo se Lib xoris epitixia.. Ta Links pou exoun LPCTSTR san 
+		parametrous DE ginonte compile
+	- Ola Ta xxxViewSchema bgainoun apo to ViewSchema pou elegxei ta Recordsets...Episis
+		eginan ta antistoixa .cpp (Oi headers prin eixan olo to kodika)
+	- Prostethike & to Remove Collections
+		
+#2005-12-15
+	+ Egine Olokenourgios ALog Debugger kai ensomatothike
+	- To Release crash pou eida xthes to bradi ofeilotan se lathos se kati ASSERTS -> VERIFY
+	# Bug: Mallon de ginete Requery sti basi!!!
+	+ Tora Pleon O Logger Xrisimopoieitai me Defines Kai mporeis na ta
+		petakseis ola apo to teliko build + kapoies allages
+		*********************************** Usage ***********************
+		1.	#define ALOGDEBUG (Active Tracing) + #include "ALog/ALog.h" in stdafx.h
+		2.	(OPTIONAL) #define INITIALIZE_ALOG in stdafx.h
+			examples:
+				#define INITIALIZE_ALOG ALog::Inst()->Create(NULL, ALog::LOG_Infol1, TRUE, TRUE);
+				#define INITIALIZE_ALOG ALog::Inst()->Create(new DebugViewer, ALog::LOG_Infol1, TRUE, FALSE);
+					param1: The Output Viewer For Use (NULL for Auto)
+					param2:	Level Of Info To Show
+					param3: ShowTimeStamp
+					param4: ShowThreadID
+		1.	INITIALIZE_ALOG; At the beginning of the program
+		2.	LOG(_T("Debug Message"); (Defaults to Info Level 3)
+			or
+			LOG(_T("@xDebug Messge")) where
+				x = 0 (ERROR)
+				x = 1 (WARNING)
+				x = 2 (INFO LEVEL 1)
+				x = 3 (INFO LEVEL 2)
+				x = 4 (INFO LEVEL 3)
+		3.	LOGWINDOW(hwnd); to Log Window Information
+		4.	MEASUREON; To Start a new Measure
+		5.	MEASUREOFF(_T("Measured Item")); To Get Measure Results
+		6.	UNINITIALIZE_ALOG; at the end
+		*********************************** Usage ***********************
+	+ Mpike kai to TotalSize na fenete sta Tracks (CCollectionsList)
+	
+#2005-12-14
+#2005-12-13
+	+ Meta apo poli kairo dokimon me to Multithreading Addition ton Tracks.. kapos Teleiose.
+		To UI apla bazei Eggrafes mesa sto Collections Table me kapoio status kai ksekinaei
+		(an den einai idi ksekinimenos) ena Worker Thread gia na kanei ti Doulia. Aftos
+		enimeronei kanonika tous Observers tou Collection Manager.
+	- Ipirxe to problima me tous Observers pou itan MFC Controls.. Lithike (oxi teleia) me
+		mia ThreadHelper Function pou an katalabei oti kati erxete apo allo Thread kanei
+		PostMessage sto Parathiro -> Ksanadexete to minima sto MFC Thread afti ti fora.
+	- Meionektimata - TODO:
+		1. Crashare kapoies fores mazi me to Debugger ... kai kapoies alles fores otan ekane
+			query ti basi
+		2. Prepei na mporei na kanei abort an i efarmogi kleisei
+		3. To kolpo me to PostMessage DEN ipostizei tin LParam (!!!!!!)
+		4. Tha prepei na paiksoun polles dokimes...
+	- To Aborting egine. Ostoso kapoia pramata akoma DEN EINAI THREAD SAFE.. (TODO)
+		O vectoras tou Subject kata ti diarkeia tou Unsubscribe einai enas apo aftous
+	+ Context Menu gia ListView & TreeView (using BCMenu)
+	+ Clipboard Functions gia Copy Path / Copy File sto ListView
+	+ Play/Enqueue Functions Pantou
+	- Oi Mpeg - APE - Ogg klp plirofories brethikan sto OpenSource Project "MediaInfo" TODO
+	+ Mpike & to Righr Click Sto CollectionsList me forward ta commands sto Dlg
+	
+#2005-12-09
+	+ Only One Instance Feature Added Using "TeenSpirit" Mutex
+	- Mpike CCriticalSection sto CDBEngine gia na ginei Thread Safe (xoris 
+		dokimi akoma)
+	
+	
+#2005-12-07
+	- Kapoies allages sto MediaFileProvider gia na ipostirize OLA ta Formats
+	- Psaksimo gia Plirofories gia MpegVideo (Trixes - To Shareaza pairnei mono
+		fps/width/height
+	- Ekana epitiximeno Compile sto edWatch gia na checkaro kapoia pramata (an
+		pairnei ta stoixeia tou MpegVideo alla tipota kai afto)
+	- TO Shareaza Diabazei wma - asf - wmvsto BOOL CLibraryBuilderInternals::ReadASF( HANDLE hFile)
+		Akoma ape - ogg TODO
+	# Lithike Bug: De Ginotan Delete to FileNameParser sto MediaFileProvider
+	# lithike Bug: Eno ekane Parse sosta to Id3Lib o decorator proxorage ke sto FileNameParser
+	- Mpike mia Progress Bar sto Status Control pou ginete update otan prostithente
+		nea Tracks
+	- Proti Dokimi Gia Multithreading xrisimopoiontas Worker Threads gia to
+		Update tis Database...Tha prepei na pesei meleti. Paratiriseis:
+		1. To Interface (Progress Bar) de doulebei afou ta NotifyObservers ginonte 
+			se allo Thread
+		2. Dokimasa na ksekiniso kai allo Thread kai egine tis poutanas kolisan ta
+			panta
+		3. Arage i Access na einai Thread-Safe? An oxi tha prepei na ftiakso ena
+			Global Database CriticalSection
+		Tha dokimaso na ftiakso mia alli efarmogi me Threads na do pos tha ginei to
+		syncronizing + epafi me to UI
+		
+#2005-12-05
+	- Kapoies mikro diorthoseis sto kodika meta apo Epitiximeno Compile se VS2005
+		pou tsimpise kati lathakia
+	- Mia mikroallagi sto InitDialog pou de xreiazotan
+	+ TODO: ena measure se xronous me ton Timer akribeias... Na ftiakso ena 
+		MACRO gia debug mono opos to TRACE (Measure("Message") & Measure() gia off)
+	- Egine to Measure san makro #Define me stdvector..
+	+ TODO: na mpoun ola afta se mia Debug Platforma
+	- Oloklirothike to perasma apo to OldDb Statistics -> Nea Db HistXXX sto CollectionManager 
+	- Egine To AviMediaFile KAI o Provider. Yparxei omos ena problima...
+		kapou xreiazete to FileSize & tha mporouse na to parei apo to BasicFileHeader
+		pou omos den to blepei.. Isos tha prepei na figei to BasicMediaFile & ti
+		thesi tou na parei o Decorator (TODO)
+	- Ebala to FileSize (Apo FindFirstFile API)sto AviMediaFile - den einai i thesi tou
+		ekei.. prepei na mpei sto Generic media File (TODO)
+	- Dokimasa kai ligo na pekso me to EncSpot kai ta Mpg - Mpeg Files alla malakies 
+		(Peiraxtike mono o media File Provider) (TODO)
+		
+#2005-12-04
+	- Epeksa ligo me to compile gia VS2005 kai mou eskise tin ID3Lib. Recovered
+	- Koitaksa enallaktika gia XML apo to ParamIO
+		1. CMarkup
+		2. PugXML (http://www.codeproject.com/soap/pugxml.asp)
+	- Peiraksa ton kodika tou CMarkup Demo gia Creation / Navigation
+	- Debug Mode ston Titlo tis Efarmogis
+	- Petaxtike to ParamIO. Dimiourgithike Interface AppSettings kai mia
+		concrete XMLAppSettings basismeni sto CMarkup
+	- Allaxtikan oloi oi kodikes tis efarmogis pou xrisimopoiousan to ParamIO
+	- Allaxtike o Kodikas tou FastSplitter na apothikebei se AppSettings. To kako
+		einai oti o FastSplitter tora xreiazete to AppSettings. To Original FastSplitter
+		pou ta apothikebe se .ini file kapou sta WinDir mpike se subfolder Original
+		CDatabase
+	- O Kodikas egine pia eksererika mikroteros 295->239 Kb (meta apo upx)
+
+#2005-11-25
+	- Teleiose to FileNameParserMediaFile (poli kalo)
+	- To FileNameParserMediaFile dokimastike sto d:\Music. Apotelesma: 
+		Crash: No
+		MemLeak: 11.5Mb (Memory Fragmentation - Not an Error)
+		Tracks Tested: 15283
+		Leak / Track < 0,94Kb
+	- Logika to Memory Fragmentation prokaleiteai apo ta Recordsets (afou
+		de kano pouthena new)
+	- Ksekinise to Import ton palaion dedomenon. Afto tha ginei me Update ton
+		dedomenon opou path (newDb) == path (oldDb). Etoimos o kodikas gia to
+		Update ton DateAdded, Rating(new sistima)
+	- Etoimo kai to perasma apo Votes->Tracks, Info
+	- TODO: statistics->histXXX tables
+	- Prostethike Optional to SYSTEMTIME sto AddEntry to InfoTableSchema
+	- H Init tis CDBEngine pairnei tora parametro to path pou briskete i basi ->
+		To path to dinei to ObjFactory.
+	- Dimiourgithike kai mia FixedField (xima einai akoma) sto CCollectionManager
+		gia na kanei kirios Replace apo "'" se "''" gia ta queries sti basi
+		Mallon paei gia to TableSchema afti san Static (TODO)
+	- Eginan 2 Nees Functions sto Ado2.h. Oi LPCTSTR GetFieldValue(LPCTSTR),
+		LPCTSTR GetFieldValue(INT) pou epistrefoun STEGNA ta pointer tou BSTR
+		tou Variant. Prepei na ginete AMESOS copy giati me ti proti metaboli
+		ta dedomena xanonte!!! Na doume ti tha ginei me to multithreading!!!
+	- Koitaksa ligo to http://www.codeproject.com/cpp/compdef.asp?target=compression
+		pou milai gia Compression meso tou Crypto++ library 
+		(http://www.eskimo.com/~weidai/cryptlib.html#platforms). Piga sto Site, 
+		katebasa to v5.2.1. Afto mallon tha xrisimopoiithe gia apothikefsi ton Personal
+		review mesa sto Tag tou ID3. Akoma gia Compression tou XML Export ton Files.
+		Akoma ipostirizei Polles Kriptografiseis alla kai hash opos MD5 SHA-1 SHA-256 klp.
+		Isos na ftiakso kapio hash Field sto Tracks pou tha ypologizetai xoris ta
+		Tags (gia sosti ebresi duplicates). Mpike sto CommonSources
+		TODO: Dokimes
+	- TODO: To perasma ton Statistics->HistXXX tables
+	- TODO: To grapsimo ton Rating - Personal sto Tag ton mp3
+	- TODO: to wmaMediaFile
+	- TODO: Avi/Mpeg Support
+	- TODO: allagi sto List ton icons/ rating handling/ Audio-Video Icon is Wrong
+	- TODO: progress Bar pano sto Status
+	- TODO: Real Tagging
+	- TODO: Other Tree Modes Interface & Implementation
+	- TODO: Own MediaPlayer
+	- TODO: Find Dialog & Find Text Box On the Toolbar
+	- TODO: Properties Gia Tracks - Artists - Albums - Genres, Multiple Tracks me 
+	Tagging + Statistics
+	- TODO: ToolTips gia Tracks - Artists - Albums - Genres
+	- TODO: Collection Statistics Dlg
+	- TODO: Options Dlg
+	- TODO: SetUp Filters Dlg (Show only new , Rating > x klp)
+	- TODO: Fuzzy Search (CP: http://www.codeproject.com/string/dmetaphone6.asp?print=true)
+	- TODO: Amazon Downloading
+	- TODO: AllMusic Downloading (CP: http://www.codeproject.com/internet/OfflineBrowserWinInet.asp)
+	- TODO: Lyrics Downloading
+	- TODO: Multithreading Downloading
+	- TODO: Multithreading continous Database Refresh
+	- TODO: Info View
+	- TODO: About Dlg
+	- TODO: Final Graphics & Color scheme
+	- TODO: MultiLang
+	- TODO: Exchange Tracks with users
+	- TODO: Upload Files to an SQL Server. With php search function
+	- TODO: AutoUpdater
+	- TODO: NSis Installer
+	
+
+
+#2005-11-23
+	- Teleiose to EncSpotMediaFile gia sosto decoding ton Frames ton ID3 Frames.
+	- Diorthosi tou skinikou pou edine (xxx) Genre Name apo to Id3LibMediaFile me 
+		decoding tou Frame
+	- Epanafora tou ID3Lib stin arxiki tou Katastasi (pli tou Bug me to buffer Override)
+		Na thimiso oti ton eixa allaksei sto tropo pou kanei search gia to Frame
+		xoris poli kala apotelesmata. Menei i allafi sto:
+		mp3_parse.cpp line 468   const size_t VBR_HEADER_MAX_SIZE = 116 --> 120
+	- To Decorator me Id3LibMediaFile + EncSpotMediaFile doulebei poli kirile.. 
+		kapies options prostethikan sta pio pano MediaFiles gia xrisi apo to to
+		MediaFileProvider
+	- To Neo sistima dokimastike sto d:\Music. Apotelesma: 
+		Crash: No
+		MemLeak: 14.5Mb (Memory Fragmentation - Not an Error)
+		Tracks Tested: 15283
+		Leak / Track = 0,94Kb
+	- TODO: Na meletithei pos dimiourgeitai afto.. Recordset? ID3Lib? EncSpot?
+		
+#2005-11-21
+	- Ola ksekinisan otan dokimasa na kano Import Ti Palia mou basi kai eida oti de
+		tha mporousa etsi opos itan. Ipirxe mono i AddFile sto CollectionManager
+		pou tha eprepe na ksanagraftei gia na ipostiriksei ta recordeset fields
+		pou tha tou pernaga
+	- Allakse to skiniko me ton CollectionManager DRASTIKA
+		1. Pleo iparxei mono 1 AddMediaFile pou pairnei san parametro to
+			Abstract MediaFile
+		2. Etsi de tha exo problima otan to balo na mi pernei arxeio alla
+			otidipote MediaFile.. (XML Field, string Line gia Parsing, Recordset klp)
+		3. Ftiaktike pros to paron to Id3LibMediaFile (Adapter sto id3/tag.h) kai
+			tha ginoun kai ta ipoloipa (TODO: wmaMediaFile, FileNameParserMediaFile,
+			EncSpotMediaFile klp)
+		4. Ola touta tha exon ti morfi Decorators (TODO) kai tha ta paragei o
+			MediaFileProvider pou egine member tou CollectionManager
+		5. Ta TrackTypes egina diko tous .h me mia static pou dinei to Filetype
+			gia dosmeno string
+		6. To GenericMediaFile pethane
+		
+	- Opoudipote ipirxe Paths motonomastike Aron Aron se Collections ka to "Path"
+		se Location (Akoma kai i Basi exei table me to onoma Collections & oxi paths)
+	- AAA koitaksa ton Mp3 Tag Tools ... ENTELOS KAKOGRMMENOS KODIKAS ALLA to 
+		CMpgHeader doulebi!!! teleia... ekana to test Project Test01..
+		
+#2005-11-20
+	- Poli Sosto to http://www.mp3-tech.org/ pou exei OpenSource tools opos to 
+		FreeAmp & to EncSpot
+	- Petaksa to CMp3File kai peiraksa to kodika stin ID3Lib gia na pairno perisotera
+		apotelesmata... praktika psaxno gia to sosto offset tou Mpeg Header.
+		Bgazei polla perisotera tora alla merika mporei na einai lathos.. To paratao
+		edo
+	- Allagi se Ola Ta observer Patterns... Eginan SingleObserver & FreeObserver
+	- To TeenSpiritDlg & to CollectionsDlg bgainoun apo to FreeObserver pia eno
+		to subject tous einai to CollectionManager (oso leitougei) to opoio
+		stelnei minimata kai stous 2.
+	- TODO: na mpei to EncSpot sto diabasma ton headers
+	- Ebala mia nea function pou fernei katefthian SYSTEMTIME apo ti basi xoris ta palio
+		CString klp.
+	- Kapoia psiloformarismata se items tou ListView
+	- Egine kai alli doulia pano sto ADO2.h. Copike POLI CString kai alla copy data
+		pou ginotan TODO: Na sinexistei i doulia... kai isos na bgei mia pio Light
+		ekdosi
+	- Brethike BUG: Tora pou ginete aftomata Update to TreeView i efarmogi
+		blah blah ... lithike... eixe ksexastei na mpei ena break; sto 
+		CDBEngine::GetFreeRecordset
+		 
+#2005-11-19
+	- Added FixSQLString sto CDBEngine gia na ginonte handle ta ' sta queries
+	- To FixSQLString Egine FixSQLFieldString kai kanei handle poli perisotera
+		pramata apo to '
+	- Ta AddFiles dokimastike se OLO to d:\Music (16349 tracks) me epitixia!!!!!!!
+	- Mixanismos cache sta queries pano stin CADODatabase i sta schemas. Merika
+		queries ginonte sinexeia ta idia... Opos "SELECT ID FROM ARTISTS WHERE NAme = 'xxx'
+		pou se eba folder mporei na ginei 50 sinexomenes fores. Egine gia
+		Albums - Artists - Genres k petixe 82% meiosei ton kliseon se queries
+	- Ebala ke ena kolpaki.. AN brike neo artist na ftiaksei neo album xoris na rotisi..
+		logika 50% kato ta Album Calls.. (sinoliki meiosei giro sto 90%)
+	- PROTO TODO: Na petakso to CMpaFile apo to Mp3MediaFile kai na to ensomatoso 
+		sto Id3Lib  Kanei Leaks kai baraei exceptions (omos doulebei)
+	
+#2005-11-18
+	- Added "With Comp" sto CreateTable ton TableSchemas
+	- Added HistArtistsTableSchema.h + HistTracksTableSchema.h + HistLogTableSchema.h
+	- Oles oi Create Table ton Table Schemas allaksan se static (Anagastika
+		efige i Virtual apo to TableSchema)
+	- Efige i GetIDFromName afou kapioi pinakes (px ta albums) ithelan perisotero apo
+		to ID. Sti Thesi tis mpike i GetID pou pairnei analoga
+	- Mpike Folder Dialog sto AddNewFolder
+	- Kanei addition ton tracks pia kai gemizei ti basi
+	- O Collection Manager sxedon oloklirothike oso anafora to "AddFolderCollection"
+	- To CDBEngine exei analabei na ftiaxnei ti Basi (an den iparxei)
+	- Efigan apo to stdafx ta ado2.h / AdoX.h .. 1 bima pio konta stin aneksartitopoisi
+		tis basis.. Stoxos o SQLSERVER (MSDE)
+	
+#2005-11-17
+	- Brethike to problima me to Error stin id3Lib. mp3_parse.cpp Line 468. To
+		MaxBufferSize na ginei apo 116 se 120. Kapoio arxeio
+		"D:\\Music\\70s\\David Bowie - Diamond Dogs - 01 - Future Legend.mp3"
+		eixe ola ta flags energopoiimena ke ekane buffer overrun sti Line 505.
+	- Eida to VividTree Control kai eida oti prepei na mpoun kapoia nea Config Options
+		opos to Selected Color to DrawItem Gradient klp (TODO:)
+	- Allagi tou cursora sto MainListView otan einai pano apo Rating
+	- Eginan Ola Ta Table Schems (plin ton History) (TODO: Na dokimastoun. Na ginoun Ta history)
+	- Elegxos stin arxi gia tin iparksi basis.. Diaforetika Dimiourgia
+	- Create Tables se ola ta TableSchemes
+	- Meleti pano sto MSDE / MS SQL Server Express 2005 pou tha einai i 
+		enallaktiki basi
+	- Test UPX compression.. (apo 708Kb(Release) -> 295
+			
+#2005-11-16
+	- Neo MediaFile IF gia xeirismo R/W ton media Files.
+	- Egine i Derived Class Mp3MediaFile pou stirizete sti Id3lib
+	- Bgazei omos ena error otan ti kano Statically link - Den to
+		ebgaze otan ti xrisimopoiousa sa Dll
+	- Brethike & lithike ena buggaki sto WinampPlayer
+	- Erebna gia wma. Ebala oldigies sto "MediaFileHandling"
+	
+#2005-11-11
+	- Doulia pano Sto CollectionsDlg. Prostethike private member CollectionManager
+	- Apotiximeni prospatheia gia "Execute and Get ID" sto DBEngine
+	- Petagma kathe kodika apo ta VariousItemsInfo.. emeinan mono gia na ksexorizoun to
+		kathena (Ola koubalane mono ena UINT mesa
+	- Ektetamenes beltistopoiiseis tou kodika sto MainTreeView
+	- Neo CollectionManager Object (TODO:)
+	- Neo PathsTableSchema .. tha akolouthisoun ke ta ipoloipa.. periexoun se static
+		ola ta queries pou tha xreiastoun (TODO:)
+	- Spasimo & beltistopoiisi tou TracksViewSchema se .cpp & SchemaUser
+		
+#2005-11-09
+	- Lithike ena akoma bug sto display tou list View (otan meteferes ti bara tracks)
+	- Douleia pano sto Collections List
+	- metatropi tou treeview na doulebi
+	
+#2005-11-08
+	- Plirofories sto OnCustomDraw gia tis ExtraInfo
+	- Allaksa ole tis ipoloipes functions tou ListControl na paizoun me ta OwnerData
+	- To Delay tou ChangeCurrentCategory metaferthike api to ListView sto TreeView (apo
+		kei pou preoerxete diladi)
+	- Prostethike delay sto ChangeCurrentTrack pou kalouse to ListView..
+	- Arxise o CollectionsDlg. Egine i Toolbar me ta eikonidia eginan Subclass
+		Toolbar & ListView
+	- Proxorise To TracksViewSchema... Tha akolouthisoun ArtistViewSchema, AlbumsViewSchema
+		ospou na eksafanistei o SQLGenerator kai na einai ola ta SQL se mia meria
+	- Brethike ena buggaki me ta ToolTips sto Vivid Tree (Otan xreiazotan na bgei
+		to tooltip & ekanes scroll .. otan eksafanizotan afine keno piso sto drawing)
+		Lithike me to na apenergopoiiso ta ToolTips apo ta resources
+	- Egine ke to ArtistsViewSchema (Poli kirile)
+	- Egine ke to AlbumsViewSchema
+	- Efige To SQLGenerator / SQLFilters etc... (poli prama)
+	- Ksekatharisa to directory sbinontas ta palia kai oti de xreiazotan
+	- Oles oi allages eginan sto TreeView / ListView gia na doulepsoun me ta schema...
+	- Edioksaa kapoia Warnings apo to FooButton (int) se INT_PTR
+	- delete to objfactory sto Application gia na prolabainei na katharisei
+		sosta ta recordsets (apo to List View) [Otan to eixa sto
+		OnDestroy tou Dlg den prolabainei na treksei o destructoras tou
+		tou ListView gia na katharisei to m_rs (SmartPointer)
+	- SaveRestore ton rithmiseon tou ListView gia to TreeSorting kai telos
+		me to Sorting me True/False/Disabled.
+		TODO: Na ftiakso kana eikonidio pano sti bara na deixei pos sortarei
+	- "No Tracks in this Selection" prostethike sto ListView otan den exei na
+		deiksei kati
+	- Prostethikan kai ta sortings se Album/Artist..
+	- TODO: Na kano to Treeview na thimate to telefteo sorting - molis
+		ftiakso ke ti mpara gia na mporei na epilegei o xristis ti thelei
+	- TODO: PathsViewSchema kai sinexeia sto CCollectionDlg
+
+#2005-11-07 (bradi)
+	- Tora pleon Exoume pragmatika OwnerData.. iparxei xoros gia beltistopoiiseis sti taxitita all
+		tha to afiso se afti ti fasi. Beltistopoiiseis TODO:
+		1. GetField me to CString .. de xreiazete.. prepei na peirakso ti CADoRecordset omos
+		2. To Absolute position... Gia ta idia subItems de xreiazete neo Absolute position
+	- Egine neo TracksViewSchema. Mallon tha kano ke ALbumsViewSchema & Artist...
+	- TODO: Plirofories sto OnCustomDraw gia tis ExtraInfo
+	- TODO: CleanUp the code from old stuff
+	- TODO: Kapos na pernaiei to TracksViewSchema sto Current Track gia na mi ginetai copy / nea 
+	queries !!!!!!!!!
+	
+#2005-11-07 (proi)
+	- Oi Allages sto DB Engine eginan.. me QueryDatabase perneis epanaxrisimopoioumeno
+	Recordset i dimiourgei neo.. Afto linei ke to problima tou multitreading argotera
+	Isos kati na kano na epistrefei smart Pointer and gia aplous pointer. Tha prepei na 
+	prospathiso na ksefigo apo to ReleaseRecordset pou ta spaei..
+	- (cont) .. Egine kai o SmartPointer CAdoRecordsetSP Features:
+		1. O CopyConstructor midenizei to copied Instance
+		2. Emperiexei ti CDBEngine
+		3. Sto destructora DE KALEI delete alla eng->ReleaseRecordset.
+		4. To CAdoDatabaseSP einai friend sto CDBEngine etsi oste i
+			ReleaseRecordset na mi mporei na klithe kata lathos apo allou
+		Etsi efigan ta ReleaseRecordset
+	
+#2005-11-06
+	- WinampPlayer Implementation (100%) Tha doume an prostheso kati sto mellon
+	- Diorthosi tou BUG sto ListView... (Ebaza ta tracks anapoda sti Lista kai
+		Ebgainan lathos ta stoixeia tous ... lvitem.nitem++;
+	- Play / Enqueue working in Toolbar
+	- Some changes in PlayerSlider
+	- Doulia pano sto CustomDraw tou ListView
+	- Petaksa to MyListView kai ta ensomatosa sto MainListView
+	- Nea Bara - ImageList gia ta iconidia sto ListView
+	- Arketi doulia pano sto ListView .. tora me kapoia eikonidia
+	- SQLLite Sample Application Ready
+	- Epaiksa ligo me to List-View iconidia - neo megethos
+	- Emeina sto problima me ta Owner-Data.. thelei ftiaksimo --> Me odigise sto
+		simperasma oti DEN tha xreasto extra ListItemData + Tha xreiastei na kano afto
+		pou elega.. na allakso to DBEngine os eksis:
+			1. NewFunction CreateRecordset()
+			2. Afto pairnei (an thelei) enas client kai kanei QueryDatabase opos ekane
+				GetRecordest prin Apla to QueryDb tha exei mia parameteo CAdoRecordset
+				pou tha einai default = NULL opote tha epistrefetai to common recordset
+				allios tha gemizetai to sigekrimeno rs
+		
+#2005-11-05
+	- WinampPlayer implementation (90%)
+	- MediaPlayer Control based on CDialog (child) - eikonidia - doulebei (90%)
+	
+#2005-11-04
+	- Neo CHeaderMainCtrl Control
+	- Doulia pano sto Player. MediaPlayerCtrl apo CDialog pou einai Child sto basiko parathiro
+	- MediaPlayer Interface kai WinampPlayer implementation (70%)
+	
+#2005-10-21
+	- Neo Main Icon + kapoia Icons gia ti nea Toolbar
+	
+#2005-10-20
+	- Try to Fix the Startup Issue with a PostMessage
+	(..) Meta ap 1.30 ores afou dokimasa Me ti static var FirstTime
+	sto ShowWindow (malakia i Static)... PostMessage me invisible to 
+	window (pali meta to postmessage kaoios ekane ShowNormal ke mou to ksanagirize
+	telika to ebala sto Telos tou InitDialog pou einai to kalitero ... tha do
+	sto mellon isos bro kati kalitero..
+	
+	- Ekana to Status na kanei Inherit ton Observer. Ekane subscription sto 
+	SM_CurrentTrackChanged Event ke perimenei na allaksei to keimeno tou
+	
+	- Ekana to List na kane Update to CurrentTrack tou Server gia na ginonte etsi
+	notify oi Observers. Kapoio problima iparxei me to na paro to ID tou track.. 
+	FIX IT.. kalitera na asxolitho me to sosto gemisma tou List ke kapoia proxeira
+	grafika - eikonidia.. 

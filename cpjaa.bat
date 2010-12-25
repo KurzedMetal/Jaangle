@@ -1,0 +1,1 @@
+xcopy "H:\Bin\TeenSpirit\output\jaangle.exe" "c:\program files\Jaangle\" /Y

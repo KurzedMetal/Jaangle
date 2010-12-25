@@ -1,0 +1,4 @@
+// Microsoft Visual C++ generated Help ID include file.
+// Used by TeenSpirit.rc
+//
+#define HIDC_TREEVIEW                   0x806603e9    // IDD_TEENSPIRIT_DIALOG [English (U.S.)]

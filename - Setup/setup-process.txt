@@ -1,0 +1,22 @@
+0. Move the new file/s to the Output/Teen spirit folder
+1. Start Venis IX
+2. Change Application Version in step 2/5
+3. Selevt Directory in step 3/5
+4. Select App Exe in step 4/5
+
+5. Make a compare with old version
+	a. Change OutFile
+	b. SetOutPath (otherwise the links will be incorrect)
+	
+6.
+---Add
+; MUI Settings
+!define MUI_ICON "MainIcon4.ico"
+!define MUI_UNICON "MainIcon4-Uninstall.ico"
+---After
+; Modern interface settings
+!include "MUI.nsh"
+
+
+
+	

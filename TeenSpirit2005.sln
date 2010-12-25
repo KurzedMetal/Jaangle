@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TeenSpirit", "TeenSpirit2005.vcproj", "{C1AE2C08-A6CA-4673-8D95-CF5608AB58D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D8CCE60E-FC21-42CF-9104-A8E6F3A90F79} = {D8CCE60E-FC21-42CF-9104-A8E6F3A90F79}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XCrashReport", "CrashReport\XCrashReport.vcproj", "{D8CCE60E-FC21-42CF-9104-A8E6F3A90F79}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C1AE2C08-A6CA-4673-8D95-CF5608AB58D5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C1AE2C08-A6CA-4673-8D95-CF5608AB58D5}.Debug|Win32.Build.0 = Debug|Win32
+		{C1AE2C08-A6CA-4673-8D95-CF5608AB58D5}.Release|Win32.ActiveCfg = Release|Win32
+		{C1AE2C08-A6CA-4673-8D95-CF5608AB58D5}.Release|Win32.Build.0 = Release|Win32
+		{D8CCE60E-FC21-42CF-9104-A8E6F3A90F79}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D8CCE60E-FC21-42CF-9104-A8E6F3A90F79}.Debug|Win32.Build.0 = Debug|Win32
+		{D8CCE60E-FC21-42CF-9104-A8E6F3A90F79}.Release|Win32.ActiveCfg = Release|Win32
+		{D8CCE60E-FC21-42CF-9104-A8E6F3A90F79}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

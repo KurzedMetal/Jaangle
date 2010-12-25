@@ -1,0 +1,24 @@
+.columnheader {
+	font-size: large; 
+	background:#CCFF00;
+	}
+.maintable {
+	font-size: small; 
+	background:#000000;
+	}
+.oddlines {
+	font-size: small; 
+	background:#99CC66;
+	}
+.evenlines {
+	font-size: small; 
+	background:#CCCC66;
+	}
+body {
+	background-color: #000000;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	color: #000000;
+}

@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!--last modified on Monday, October 26, 1998 11:54 PM -->
+<HTML>
+
+<HEAD>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html;CHARSET=iso-8859-1">
+	<META NAME="GENERATOR" Content="Visual Page 2.0 for Windows">
+	<META NAME="Author" Content="Michael Dunn">
+	<TITLE>CShellFileOp docs - by Michael Dunn</TITLE>
+</HEAD>
+
+<BODY>
+
+<H1 ALIGN="CENTER">CShellFileOp Documentation</H1>
+<P><TT>CShellFileOp</TT> was written by <A HREF="mailto:mdunn@inreach.com">Michael Dunn</A>. Copyrighted and all
+that stuff. You can use, reuse, refuse, abuse, disuse, or diffuse it as you see fit as long as the copyright notices
+are kept in the source code.</P>
+<H3>CShellFileOp notes</H3>
+<P><TT>CShellFileOp</TT> uses <TT>CString</TT>s and <TT>LPCTSTR</TT>s, so it will compile and run fine in Unicode.
+Many methods operate on <TT>CString</TT>s or buffers, and may throw <TT>CMemoryException</TT>s. When this happens,
+the methods print a <TT>TRACE</TT> message and re-throw the exception so you can handle it, or let MFC handle it.</P>
+<H3>CShellFileOp Methods</H3>
+<H4>Constructor/Destructor</H4>
+
+<UL>
+	<LI><A HREF="#CShellFileOp">CShellFileOp</A>
+	<LI><A HREF="#destructor">~CShellFileOp</A>
+</UL>
+
+<H4>Initialization and Setup Operations</H4>
+
+<UL>
+	<LI><A HREF="#AddSourceFile">AddSourceFile</A>
+	<LI><A HREF="#AddDestFile">AddDestFile</A>
+	<LI><A HREF="#SetOperationFlags">SetOperationFlags</A>
+	<LI><A HREF="#SetProgressDlgTitle">SetProgressDlgTitle</A>
+</UL>
+
+<H4>Doing File Operations</H4>
+
+<UL>
+	<LI><A HREF="#Go">Go</A>
+	<LI><A HREF="#AnyOperationsAborted">AnyOperationsAborted</A>
+</UL>
+
+<H4>Other</H4>
+
+<UL>
+	<LI><A HREF="#Reset">Reset</A>
+	<LI><A HREF="#GetSourceFileList">GetSourceFileList</A>
+	<LI><A HREF="#GetDestFileList">GetDestFileList</A>
+</UL>
+
+<H2>
+<HR ALIGN="CENTER">
+Constructor/Destructor</H2>
+<P><A NAME="CShellFileOp"></A><B><FONT FACE="Tahoma, Arial, Helvetica">CShellFileOp()</FONT></B></P>
+<P>This is the default constructor. It doesn't do anything interesting.</P>
+<P><A NAME="destructor"></A><B><FONT FACE="Tahoma, Arial, Helvetica">~CShellFileOp()</FONT></B></P>
+<P>The class destructor doesn't do anything; all the work is done by the destructors of the member objects.</P>
+<H2>
+<HR ALIGN="CENTER">
+Initialization and Setup Operations</H2>
+<P><A NAME="AddSourceFile"></A><B><FONT FACE="Tahoma, Arial, Helvetica">BOOL AddSourceFile ( LPCTSTR szPath )</FONT></B></P>
+<P><B>Parameters</B></P>
+<P><I>szPath</I>: The path, filename, or wildcard specification which will be added to the list of items to be
+copied. This <I>can</I> be a directory name, despite the name of the function.</P>
+<P><B>Return value</B></P>
+<P>TRUE if the path was added successfully. A <TT>CMemoryException</TT> will be thrown in an out-of-memory condition.</P>
+<P><BR>
+<A NAME="AddDestFile"></A><B><FONT FACE="Tahoma, Arial, Helvetica">BOOL AddDestFile ( LPCTSTR szPath )</FONT></B></P>
+<P><B>Parameters</B></P>
+<P><I>szPath</I>: The directory or destination filename. If you are copying files to a directory, this should be
+a directory name. If you are renaming a file, this should be the new filename.</P>
+<P><B>Return value</B></P>
+<P>TRUE if the path was added successfully. A <TT>CMemoryException</TT> will be thrown in an out-of-memory condition.</P>
+<P><BR>
+<A NAME="SetOperationFlags"></A><B><FONT FACE="Tahoma, Arial, Helvetica">void SetOperationFlags ( UINT uOpType,
+CWnd* pWnd, BOOL bSilent, BOOL bAllowUndo, BOOL bWildcardFilesOnly, BOOL bNoConfirmation, BOOL bNoConfirmationToMakeDir,
+BOOL bRenameOnCollision, BOOL bSimpleProgressDlg )</FONT></B></P>
+<P><B>Parameters</B></P>
+<P><I>uOpType</I>: <TT>FO_COPY</TT>, <TT>FO_DELETE</TT>, <TT>FO_MOVE</TT>, or <TT>FO_RENAME</TT>.<BR>
+<I>pWnd</I>: Pointer to a window which will be used as the parent window for any windows the OS needs to display
+during the file operation. May not be NULL.<BR>
+<I>bSilent</I>: Pass TRUE to make the operation silent.<BR>
+<I>bAllowUndo</I>: Pass TRUE to have Windows save information for undoing the operation.<BR>
+<I>bWildcardFilesOnly</I>: Pass TRUE to indicate that wildcard patterns should match only files, not directories.<BR>
+<I>bNoConfirmation</I>: Pass TRUE to suppress confirmation dialogs.<BR>
+<I>bNoConfirmationToMakeDir</I>: Pass TRUE to have Windows automatically create directories as necessary during
+the operation, without prompting.<BR>
+<I>bRenameOnCollision</I>: Pass TRUE to have files renamed in the target directory to avoid filename collisions.<BR>
+<I>bSimpleProgressDlg</I>: Pass TRUE to have the progress dialog not display the filenames of files being processed.</P>
+<P><B>Return Value</B></P>
+<P>None.</P>
+<P><B>Remarks</B></P>
+<P>This is a really big function! Each parameter corresponds to a <TT>FOF_*</TT> flag used by the API. If you prefer
+to use the flags, you can call the second form of this function, described next. If you pass TRUE for <I>bSimpleProgressDlg</I>,
+you should also call the <B><A HREF="#SetProgressDlgTitle"><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SetProgressDlgTitle()</FONT></A></B>
+function.</P>
+<P><BR>
+<B><FONT FACE="Tahoma, Arial, Helvetica">void SetOperationFlags ( UINT uOpType, CWnd* pWnd, FILEOP_FLAGS fFlags
+)</FONT></B></P>
+<P><B>Parameters</B></P>
+<P><I>uOpType, pWnd</I>: Same as above.<BR>
+<I>fFlags</I>: Any legal combination of the <TT>FOF_*</TT> flags. See the SDK docs for descriptions of these flags.</P>
+<P><B>Return Value</B></P>
+<P>None.</P>
+<P><BR>
+<A NAME="SetProgressDlgTitle"></A><B><FONT FACE="Tahoma, Arial, Helvetica">void SetProgressDlgTitle ( LPCTSTR szTitle
+)</FONT></B></P>
+<P><B>Parameters</B></P>
+<P><I>szTitle</I>: The string to display in the title bar of the simple progress dialog.</P>
+<P><B>Return Value</B></P>
+<P>None</P>
+<P><B>Remarks</B></P>
+<P>Calling this function has no effect unless you specify a simple progress dialog in a call to <B><A HREF="#SetOperationFlags"><FONT
+SIZE="2" FACE="Tahoma, Arial, Helvetica">SetOperationFlags()</FONT></A></B>. The <TT>CShellFileOp</TT> object maintains
+its own copy of the string, so the caller can reuse or destroy its string after this function returns.</P>
+<H2>
+<HR ALIGN="CENTER">
+Doing File Operations</H2>
+<P><A NAME="Go"></A><B><FONT FACE="Tahoma, Arial, Helvetica">BOOL Go ( BOOL* lpbOperationStarted, int* lpnAPIReturn
+= NULL, BOOL* lpbAnyOperationsAborted = NULL )</FONT></B></P>
+<P><B>Parameters</B></P>
+<P><I>lpbOperationStarted</I>: Pointer to a BOOL variable that receives TRUE if the <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B>
+function was called, or FALSE if it was not. You use this value to determine the cause of an error when <B><FONT
+SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></B> returns FALSE.<BR>
+<I>lpnAPIReturn</I>: Pointer to an int that receives the return value from <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B>.
+The variable is not changed if <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B> is
+not called. This parameter can be NULL if you do not care about this information.<BR>
+<I>lpbAnyOperationsAborted</I>: Pointer to a BOOL that receives TRUE if the user aborts the <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B>
+while it is working. The variable is not changed if <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B>
+is not called. This flag can also be accessed with the <B><A HREF="#AnyOperationsAborted"><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">AnyOperationsAborted()</FONT></A></B>
+function. This parameter can be NULL if you do not care about this information.</P>
+<P><B>Return Value</B></P>
+<P>TRUE if <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B> was called and succeeded,
+FALSE otherwise.</P>
+<P><B>Remarks</B></P>
+<P>The return value indicates whether the entire operation succeeded. Since there are two conditions that make
+<B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></B> fail, the <I>lpbOperationStarted</I> parameter
+tells you what the cause was. If <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></B> never called
+<B><FONT SIZE="2" FACE="Courier New, Courier">SHFileOperation()</FONT></B> due to invalid parameters, then <I>*lpbOperationStarted</I>
+will be FALSE. In this case, check the debug window for trace messages that will help you track down the problem
+in your parameters. If <I>*lpbOperationStarted</I> is TRUE, then <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B>
+itself failed. Following are the reasons <B><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></B> will
+return FALSE in the <I>*lpbOperationStarted</I> parameter:</P>
+
+<OL>
+	<LI>The operation type and flags were never set or are invalid.
+	<LI>The source file list is empty.
+	<LI>The destination file list is empty and the operation type is not delete.
+	<LI>The destination file list has more than one string, but not the same number of strings as the source list.
+	<LI>A memory allocation error occurred while the function was setting up buffers for use with <B><FONT SIZE="2"
+	FACE="Tahoma, Arial, Helvetica">SHFileOperation()</FONT></B>.
+</OL>
+
+<P><BR>
+<A NAME="AnyOperationsAborted"></A><B><FONT FACE="Tahoma, Arial, Helvetica">BOOL AnyOperationsAborted() const</FONT></B></P>
+<P><B>Parameters</B></P>
+<P>None.</P>
+<P><B>Return Value</B></P>
+<P>A BOOL indicating if the last call to <B><A HREF="#Go"><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></A></B>
+was canceled by the user. This is the same information returned in the <I>lpbAnyOperationsAborted</I> parameter
+of <B><A HREF="#Go"><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></A></B>.</P>
+<P><B>Remarks</B></P>
+<P>Calling this function before calling <B><A HREF="#Go"><FONT SIZE="2" FACE="Tahoma, Arial, Helvetica">Go()</FONT></A></B>
+will throw an assert (in the debug version) and return FALSE.</P>
+<H2>
+<HR ALIGN="CENTER">
+Other</H2>
+<P><A NAME="Reset"></A><B><FONT FACE="Tahoma, Arial, Helvetica">void Reset()</FONT></B></P>
+<P><B>Parameters</B></P>
+<P>None.</P>
+<P><B>Return Value</B></P>
+<P>None.</P>
+<P><B>Remarks</B></P>
+<P>If you are using a <TT>CShellFileOp</TT> object to do multiple operations, call this function after one operation
+to clear out all data from the operation, and &quot;wipe the slate&quot; for the next one.</P>
+<P><BR>
+<A NAME="GetSourceFileList"></A><B><FONT FACE="Tahoma, Arial, Helvetica">const CStringList&amp; GetSourceFileList()
+const</FONT></B></P>
+<P><B>Parameters</B></P>
+<P>None.</P>
+<P><B>Return Value</B></P>
+<P>A reference to a <TT>CStringList</TT> that holds all strings you have added using <B><A HREF="#AddSourceFile"><FONT
+SIZE="2" FACE="Tahoma, Arial, Helvetica">AddSourceFile()</FONT></A></B>.</P>
+<P><B>Remarks</B></P>
+<P>You should access this list only if you want to enumerate the source files. Changing this list in any way can
+cause unpredictable behavior, and will draw my ire. <TT>;)</TT></P>
+<P><BR>
+<A NAME="GetDestFileList"></A><B><FONT FACE="Tahoma, Arial, Helvetica">const CStringList&amp; GetDestFileList()
+const</FONT></B></P>
+<P><B>Parameters</B></P>
+<P>None.</P>
+<P><B>Return Value</B></P>
+<P>A reference to a <TT>CStringList</TT> that holds all strings you have added using <B><A HREF="#AddDestFile"><FONT
+SIZE="2" FACE="Tahoma, Arial, Helvetica">AddDestFile()</FONT></A></B>.</P>
+<P><B>Remarks</B></P>
+
+<P>You should access this list only if you want to enumerate the destination files. Same thing applies about my
+ire.
+
+</BODY>
+
+</HTML>

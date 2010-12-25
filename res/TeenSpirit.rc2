@@ -1,0 +1,58 @@
+//
+// TeenSpirit.RC2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+#ifdef _UNICODE
+CREATEPROCESS_MANIFEST_RESOURCE_ID 	RT_MANIFEST	"res\\TeenSpirit.manifest"
+#endif
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+#include "VersionNo.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION MAJOR_VERSION,MINOR_VERSION,BUILD_VERSION,SUB_BUILD_VERSION
+ PRODUCTVERSION MAJOR_VERSION,MINOR_VERSION,BUILD_VERSION,SUB_BUILD_VERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS_NT
+ FILETYPE VFT_APP
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+			//VALUE "Build Date", BUILDDATE
+            VALUE "Developer", "Alex Economou"
+            VALUE "CompanyName", "Artificial Spirit"
+			VALUE "Web", "http://www.jaangle.com"
+			VALUE "FileDescription", "Jaangle Music Player & Organizer"
+            VALUE "FileVersion", STRFILEVER
+            VALUE "InternalName", "Jaangle.exe"
+            VALUE "LegalCopyright", "(c) Alex Economou. Some rights reserved."
+            VALUE "OriginalFilename", "jaangle.exe"
+            VALUE "ProductName", "Jaangle"
+            VALUE "ProductVersion", STRFILEVER
+//			VALUE "Version Date", VER_DATE
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
