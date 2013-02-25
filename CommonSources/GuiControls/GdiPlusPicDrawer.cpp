@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -46,7 +46,7 @@ BOOL GdiPlusPicDrawer::Draw(HDC hdc, CRect& trgRC, CRect* pSrcRC/* = NULL*/)
 		);
 }
 
-BOOL GdiPlusPicDrawer::Draw(Graphics& g, Rect& trgRC, Rect* pSrcRC/* = NULL*/)
+BOOL GdiPlusPicDrawer::Draw(Graphics& g, Rect& trgRC, Rect* pSrcRC/* = NULL*/, OUT Rect* pActualImageRC/* = NULL*/)
 {
 	if (m_drawParams.bTransparent == FALSE)
 		g.FillRectangle(&m_bkBrush, trgRC.X, trgRC.Y, trgRC.Width, trgRC.Height);
@@ -132,6 +132,8 @@ BOOL GdiPlusPicDrawer::Draw(Graphics& g, Rect& trgRC, Rect* pSrcRC/* = NULL*/)
 		Status st = g.DrawImage(m_pImage, realTargetRC, 
 			realSourceRC.X, realSourceRC.Y, realSourceRC.Width, realSourceRC.Height, 
 			UnitPixel, 0, 0, 0);
+		if (pActualImageRC != NULL)
+			*pActualImageRC = realTargetRC;
 		ASSERT(st==Ok);
 		return st==Ok;
 	}
@@ -178,14 +180,43 @@ BOOL GdiPlusPicDrawer::Create(INT cx, INT cy)
 	return m_pImage->GetLastStatus() == Ok;
 }
 
-BOOL GdiPlusPicDrawer::SaveFile(LPCTSTR imgFile)
+BOOL GdiPlusPicDrawer::SaveFile(LPCTSTR imgFile, ImageFormatEnum imageFormat)
 {
 	if (m_pImage == NULL)
 		return FALSE;
+	return SaveFilePrivate(m_pImage, imgFile, imageFormat);
+}
+
+BOOL GdiPlusPicDrawer::SaveThumbnail(LPCTSTR imgFile, INT cx, INT cy, ImageFormatEnum imageFormat)
+{
+	if (m_pImage == NULL)
+		return FALSE;
+	Gdiplus::Bitmap img(cx, cy, PixelFormat32bppARGB);
+	Gdiplus::Graphics g(&img);
+	//g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+	g.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+	Gdiplus::Rect rc(0,0,cx,cy);
+	if (Draw(g, rc))
+		return SaveFilePrivate(&img, imgFile, imageFormat);
+	return FALSE;
+}
+
+BOOL GdiPlusPicDrawer::SaveFilePrivate(Image* pImage, LPCTSTR imgFile, ImageFormatEnum imageFormat)
+{
 	CLSID pngClsid;
 	Status st = GenericError;
-	if (GetEncoderClsid(L"image/png", &pngClsid))
-		st = m_pImage->Save(imgFile, &pngClsid, NULL);
+	LPCTSTR type = L"image/png";
+	switch (imageFormat)
+	{
+	case IF_jpg:
+		type = L"image/jpg";
+		break;
+	case IF_png:
+	default:
+		break;
+	}
+	if (GetEncoderClsid(type, &pngClsid))
+		st = pImage->Save(imgFile, &pngClsid, NULL);
 	return st == Ok;
 }
 

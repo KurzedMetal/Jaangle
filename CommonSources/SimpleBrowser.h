@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -100,7 +100,9 @@ public:
 
 	BOOL ExecuteJavascript(LPCTSTR script);
 	BOOL GetElementText(LPCTSTR elementName, LPTSTR bf, UINT bfLen);
+
  
+
 // get document interface; returns NULL 
 // if interface is not available 
 // (which is the case if you've navigated to
@@ -110,6 +112,7 @@ public:
 //  to host)
 	IWebBrowser2* GetBrowser()				{return m_pBrowser;}
 	IHTMLDocument2* GetDocument();			
+	IHTMLDocument3* GetDocument3();
 protected:
 	virtual void PostNcDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -139,8 +142,10 @@ private:
 	void OnStatusTextChange(BSTR text);
 	void OnTitleChange(BSTR bstrText);
 	void OnCommandStateChange(long command, VARIANT_BOOL Enable);
-public:
-	IHTMLDocument3* GetDocument3();
+
+	LPDISPATCH m_lpMainWindowDispatch;
+
+
 private:
     CWnd* m_pBrowserWnd;			// browser window
 	IWebBrowser2* m_pBrowser;		// browser control

@@ -26,7 +26,11 @@
 #pragma once
 //#pragma warning (disable: 4146)
 #import "C:\program files\common files\system\ado\msadox.dll"
-#import "C:\program files\common files\system\ado\msado15.dll" rename("EOF","adoEOF")
+
+//=== For win7 SP1 and later
+#import "C:\program files\common files\system\ado\msado60_Backcompat.tlb" rename("EOF","adoEOF")
+//=== For win7 and earlier
+//#import "C:\program files\common files\system\ado\msado15.dll" rename("EOF","adoEOF")
 #import "C:\Program Files\Common Files\System\ado\msjro.dll"
 //#pragma warning (default: 4146)
 #include "icrsint.h"

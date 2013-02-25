@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -47,7 +47,8 @@ SimpleBrowser::SimpleBrowser()
 	: m_pBrowser(NULL),
 	  m_pBrowserDispatch(NULL),
 	  m_pBrowserWnd(NULL),
-	  m_pNotifier(NULL)
+	  m_pNotifier(NULL),
+	  m_lpMainWindowDispatch(NULL)
 {
 }
 
@@ -599,16 +600,18 @@ BOOL SimpleBrowser::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
+
 void SimpleBrowser::OnBeforeNavigate2(LPDISPATCH lpDisp, VARIANT FAR *URL,
 					   VARIANT FAR *Flags, VARIANT FAR *TargetFrameName,
 					   VARIANT FAR *PostData, VARIANT FAR *Headers,
 					   VARIANT_BOOL *Cancel)
 {
+	if (m_lpMainWindowDispatch == NULL)
+		m_lpMainWindowDispatch = lpDisp;
 	if (m_pNotifier)
 	{
 		m_pNotifier->OnBeforeNavigate(CW2CT(URL->bstrVal));
 	}
-
 }
 void SimpleBrowser::OnDocumentComplete(LPDISPATCH lpDisp,VARIANT FAR* URL)
 {
@@ -632,7 +635,7 @@ void SimpleBrowser::OnDownloadComplete()
 }
 void SimpleBrowser::OnNavigateComplete2(LPDISPATCH lpDisp,VARIANT FAR* URL)
 {
-	if (m_pNotifier)
+	if (m_pNotifier && lpDisp == m_lpMainWindowDispatch)
 		m_pNotifier->OnNavigateComplete(CW2CT(URL->bstrVal));
 
 }

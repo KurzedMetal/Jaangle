@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -36,6 +36,7 @@ public:
 	//GetGraphics(...) at the beginning of the OnPaint
 	//Render(...) at the end
 	Gdiplus::Graphics* GetGraphics(INT cx, INT cy);
+	Gdiplus::Graphics* GetGraphics()					{return m_pG;}
 	Gdiplus::Bitmap* GetBitmap();
 	void Render(Gdiplus::Graphics& destination, INT X = 0, INT Y = 0);
 	void ConfigBuffer(Gdiplus::SmoothingMode smoothingMode);

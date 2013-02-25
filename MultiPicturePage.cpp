@@ -117,13 +117,13 @@ void CMultiPicturePage::Refresh()
 		//		_T("%s: %d x %d. %s"), 
 		//		IDI_INFO, pLang->GetString(IDS_PICTUREDIMENSIONS), picSize.cx, picSize.cy, pLang->GetString(IDS_OPTIONS));
 		//	curLen += _sntprintf(&txt[curLen], txtLen - curLen,
-		//		_T("<br><t>� <a msg=\"3\">%s</a>."), pLang->GetString(IDS_DELETEPICTURE));
+		//		_T("<br><t>· <a msg=\"3\">%s</a>."), pLang->GetString(IDS_DELETEPICTURE));
 		//}
 		//curLen += _sntprintf(&txt[curLen], txtLen - curLen,
-		//	_T("<br><t>� <a msg=\"1\">%s</a>."), pLang->GetString(IDS_IMPORTDATADROMFILE));
+		//	_T("<br><t>· <a msg=\"1\">%s</a>."), pLang->GetString(IDS_IMPORTDATADROMFILE));
 		//curLen += _sntprintf(&txt[curLen], txtLen - curLen,
-		//	_T("<br><t>� <a msg=\"4\">%s</a>."), pLang->GetString(IDS_PASTEPICTURE));
-		//	//_tcsncat(txt, _T("<br><t>� <a msg=\"4\">Paste a Picture</a>."), _tcslen(txt) - txtLen);
+		//	_T("<br><t>· <a msg=\"4\">%s</a>."), pLang->GetString(IDS_PASTEPICTURE));
+		//	//_tcsncat(txt, _T("<br><t>· <a msg=\"4\">Paste a Picture</a>."), _tcslen(txt) - txtLen);
 		//txt[txtLen - 1] = 0;
 		//m_Info.SetWindowText(txt);
 
@@ -147,13 +147,13 @@ void CMultiPicturePage::Refresh()
 	//		_T("%s: %d x %d. %s"), 
 	//		IDI_INFO, pLang->GetString(IDS_PICTUREDIMENSIONS), picSize.cx, picSize.cy, pLang->GetString(IDS_OPTIONS));
 	//	curLen += _sntprintf(&txt[curLen], txtLen - curLen,
-	//		_T("<br><t>� <a msg=\"3\">%s</a>."), pLang->GetString(IDS_DELETEPICTURE));
+	//		_T("<br><t>· <a msg=\"3\">%s</a>."), pLang->GetString(IDS_DELETEPICTURE));
 	//}
 	//curLen += _sntprintf(&txt[curLen], txtLen - curLen,
-	//	_T("<br><t>� <a msg=\"1\">%s</a>."), pLang->GetString(IDS_IMPORTDATADROMFILE));
+	//	_T("<br><t>· <a msg=\"1\">%s</a>."), pLang->GetString(IDS_IMPORTDATADROMFILE));
 	//curLen += _sntprintf(&txt[curLen], txtLen - curLen,
-	//	_T("<br><t>� <a msg=\"4\">%s</a>."), pLang->GetString(IDS_PASTEPICTURE));
-	//	//_tcsncat(txt, _T("<br><t>� <a msg=\"4\">Paste a Picture</a>."), _tcslen(txt) - txtLen);
+	//	_T("<br><t>· <a msg=\"4\">%s</a>."), pLang->GetString(IDS_PASTEPICTURE));
+	//	//_tcsncat(txt, _T("<br><t>· <a msg=\"4\">Paste a Picture</a>."), _tcslen(txt) - txtLen);
 	//txt[txtLen - 1] = 0;
 	//m_Info.SetWindowText(txt);
 	
@@ -299,7 +299,7 @@ BOOL CMultiPicturePage::GetPicture(UINT idx, PicInfo& picInfo)
 
 BOOL CMultiPicturePage::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-	TRACEST(_T("CMultiPicturePage::OnCommand \r\n"), wParam);
+	TRACEST(_T("CMultiPicturePage::OnCommand wParam:"), wParam);
 	switch (wParam)
 	{
 	case IDC_PREVIOUS:

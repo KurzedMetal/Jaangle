@@ -1,25 +1,24 @@
-﻿//	/*
-// 	*
-// 	* Copyright (C) 2003-2010 Alexandros Economou
-//	*
-//	* This file is part of Jaangle (http://www.jaangle.com)
-// 	*
-// 	* This Program is free software; you can redistribute it and/or modify
-// 	* it under the terms of the GNU General Public License as published by
-// 	* the Free Software Foundation; either version 2, or (at your option)
-// 	* any later version.
-// 	*
-// 	* This Program is distributed in the hope that it will be useful,
-// 	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-// 	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// 	* GNU General Public License for more details.
-// 	*
-// 	* You should have received a copy of the GNU General Public License
-// 	* along with GNU Make; see the file COPYING. If not, write to
-// 	* the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-// 	* http://www.gnu.org/copyleft/gpl.html
-// 	*
-//	*/ 
+/////////////////////////////////////////////////////////////////////////////
+// SystemTray.h : header file
+//
+// Written by Chris Maunder (cmaunder@mail.com)
+// Copyright (c) 1998.
+//
+// This code may be used in compiled form in any way you desire. This
+// file may be redistributed unmodified by any means PROVIDING it is 
+// not sold for profit without the authors written consent, and 
+// providing that this notice and the authors name is included. If 
+// the source code in  this file is used in any commercial application 
+// then acknowledgement must be made to the author of this file 
+// (in whatever form you wish).
+//
+// This file is provided "as is" with no expressed or implied warranty.
+//
+// Expect bugs.
+// 
+// Please use and enjoy. Please let me know of any bugs/mods/improvements 
+// that you have found/implemented and I will fix/incorporate them into this
+// file. 
 
 #ifndef _INCLUDED_SYSTEMTRAY_H_
 #define _INCLUDED_SYSTEMTRAY_H_

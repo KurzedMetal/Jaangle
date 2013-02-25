@@ -2,7 +2,7 @@
 
 ; Define your application name
 !define APPNAME "Jaangle music management"
-!define APPNAMEANDVERSION "Jaangle 0.96b"
+!define APPNAMEANDVERSION "Jaangle 0.98f"
 
 ; Main Install settings
 Name "${APPNAMEANDVERSION}"

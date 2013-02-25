@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -127,17 +127,18 @@ void CIconEditEx::SetIconDimentions(INT cx, INT cy)
 {
 	m_cx = cx;
 	m_cy = cy;
+	ReSize();
 }
 
 void CIconEditEx::SetIcon(HICON icon) 
 {
 	m_hIcon = icon;
-	//ReSize();
+	ReSize();
 }
 void CIconEditEx::SetClearIcon(HICON icon)
 {
 	m_hClearIcon = icon;
-	//ReSize();
+	ReSize();
 }
 
 void CIconEditEx::SetIcon(UINT iconres) 

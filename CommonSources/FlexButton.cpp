@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -317,8 +317,20 @@ void FlexButton::SetIconId(int nIconId, INT cx, INT cy)
 void FlexButton::SetIcon(HICON hIcon, INT cx, INT cy)
 {
 	ASSERT(cx >= 0 && cy >= 0);
-	m_nIconCx = cx;
-	m_nIconCy = cy;
+	if (cx == 0)
+	{
+		if (m_nIconCx == 0)
+			m_nIconCx = 16;
+	}
+	else
+		m_nIconCx = cx;
+	if (cy == 0)
+	{
+		if (m_nIconCy == 0)
+			m_nIconCy = 16;
+	}
+	else
+		m_nIconCy = cy;
 	m_hIcon = hIcon;
 }
 

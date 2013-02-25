@@ -1,25 +1,79 @@
-﻿//	/*
-// 	*
-// 	* Copyright (C) 2003-2010 Alexandros Economou
-//	*
-//	* This file is part of Jaangle (http://www.jaangle.com)
-// 	*
-// 	* This Program is free software; you can redistribute it and/or modify
-// 	* it under the terms of the GNU General Public License as published by
-// 	* the Free Software Foundation; either version 2, or (at your option)
-// 	* any later version.
-// 	*
-// 	* This Program is distributed in the hope that it will be useful,
-// 	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-// 	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// 	* GNU General Public License for more details.
-// 	*
-// 	* You should have received a copy of the GNU General Public License
-// 	* along with GNU Make; see the file COPYING. If not, write to
-// 	* the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-// 	* http://www.gnu.org/copyleft/gpl.html
-// 	*
-//	*/ 
+/////////////////////////////////////////////////////////////////////////////
+// SystemTray.cpp : implementation file
+//
+// MFC VERSION
+//
+// This is a conglomeration of ideas from the MSJ "Webster" application,
+// sniffing round the online docs, and from other implementations such
+// as PJ Naughter's "CTrayNotifyIcon" (http://indigo.ie/~pjn/ntray.html)
+// especially the "CSystemTray::OnTrayNotification" member function.
+// Joerg Koenig suggested the icon animation stuff
+//
+// This class is a light wrapper around the windows system tray stuff. It
+// adds an icon to the system tray with the specified ToolTip text and 
+// callback notification value, which is sent back to the Parent window.
+//
+// The tray icon can be instantiated using either the constructor or by
+// declaring the object and creating (and displaying) it later on in the
+// program. eg.
+//
+//        CSystemTray m_SystemTray;    // Member variable of some class
+//        
+//        ... 
+//        // in some member function maybe...
+//        m_SystemTray.Create(pParentWnd, WM_MY_NOTIFY, "Click here", 
+//                          hIcon, nSystemTrayID);
+//
+// Written by Chris Maunder (cmaunder@mail.com)
+// Copyright (c) 1998-2003.
+//
+// Updated: 25 Jul 1998 - Added icon animation, and derived class
+//                        from CWnd in order to handle messages. (CJM)
+//                        (icon animation suggested by Joerg Koenig.
+//                        Added API to set default menu item. Code provided
+//                        by Enrico Lelina.
+//
+// Updated: 6 June 1999 - SetIcon can now load non-standard sized icons (Chip Calvert)
+//                        Added "bHidden" parameter when creating icon
+//                        (Thanks to Michael Gombar for these suggestions)
+//                        Restricted tooltip text to 64 characters.
+//
+// Updated: 9 Nov 1999  - Now works in WindowsCE.
+//                        Fix for use in NT services (Thomas Mooney, TeleProc, Inc)
+//                        Added W2K stuff by Michael Dunn
+//
+// Updated: 1 Jan 2000  - Added tray minimisation stuff.
+// 
+// Updated: 21 Sep 2000 - Added GetDoWndAnimation - animation only occurs if the system
+//                        settings allow it (Matthew Ellis). Updated the GetTrayWndRect
+//                        function to include more fallback logic (Matthew Ellis)
+//                        NOTE: Signature of GetTrayWndRect has changed!
+// 
+// Updated: 4 Aug 2003 - Fixed bug that was stopping icon from being recreated when
+//                       Explorer crashed
+//                       Fixed resource leak in SetIcon
+//						 Animate() now checks for empty icon list - Anton Treskunov
+//						 Added the virutal CustomizeMenu() method - Anton Treskunov
+//                       
+//
+// This code may be used in compiled form in any way you desire. This
+// file may be redistributed unmodified by any means PROVIDING it is 
+// not sold for profit without the authors written consent, and 
+// providing that this notice and the authors name is included. If 
+// the source code in  this file is used in any commercial application 
+// then acknowledgement must be made to the author of this file 
+// (in whatever form you wish).
+//
+// This file is provided "as is" with no expressed or implied warranty.
+// The author accepts no liability for any damage caused through use.
+//
+// Expect bugs.
+// 
+// Please use and enjoy. Please let me know of any bugs/mods/improvements 
+// that you have found/implemented and I will fix/incorporate them into this
+// file. 
+//
+/////////////////////////////////////////////////////////////////////////////
     
 #include "stdafx.h"
 #include "SystemTray.h"
@@ -160,8 +214,16 @@ BOOL CSystemTray::Create(CWnd* pParent, UINT uCallbackMessage, LPCTSTR szToolTip
     m_tnd.hWnd   = pParent->GetSafeHwnd()? pParent->GetSafeHwnd() : m_hWnd;
     m_tnd.uID    = uID;
     m_tnd.hIcon  = icon;
-	m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | (bShowToolTip ?  NIF_TIP : 0);
-    m_tnd.uCallbackMessage = uCallbackMessage;
+
+	OSVERSIONINFO versionInfo;
+	versionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	GetVersionEx(&versionInfo);
+	if (versionInfo.dwMajorVersion >= 6)
+		m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | (bShowToolTip ?  NIF_TIP : 0);
+	else
+		m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+
+	m_tnd.uCallbackMessage = uCallbackMessage;
     _tcsncpy(m_tnd.szTip, szToolTip, m_nMaxTooltipLength-1);
 
 #ifdef SYSTEMTRAY_USEW2K

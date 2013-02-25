@@ -22,6 +22,6 @@
 //	*/ 
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 98
-#define BUILD_VERSION 971
+#define BUILD_VERSION 977
 #define SUB_BUILD_VERSION 0
-#define STRFILEVER "0, 98, 971, 0"
+#define STRFILEVER "0, 98, 977, 0"

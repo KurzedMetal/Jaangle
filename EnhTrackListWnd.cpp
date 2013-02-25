@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -104,7 +104,7 @@ void CEnhTrackListWnd::ApplyTranslation(ITranslation& translation)
 void CEnhTrackListWnd::ApplySkin(ISkin& _skin)
 {
 	TSSkin& skin = (TSSkin&) _skin;
-	m_searchEdit.SetFont(skin.GetFont(CSEC_TrackListTitle, FSTY_Edit));
+	m_searchEdit.SetFont(skin.GetFont(CSEC_TrackListTitle, FSTY_Normal));
 	m_caption.SetFont(skin.GetFont(CSEC_TrackListTitle, FSTY_Normal));
 	m_caption.SetSpecialFont(skin.GetFont(CSEC_TrackListTitle, FSTY_NormalBold));
 	m_caption.Invalidate();

@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -62,11 +62,7 @@
 #define USE_CPUTICKER
 //Enable this to let the option to use PrunnedFileViewer (limited file logger)
 #define USE_PRUNNEDFILEVIEWER
-
-#ifdef USE_CPUTICKER
-#include "cputicker.h"
-#endif
-
+#include "PerfTimer.h"
 
 //=================================================
 //=========UTILITIES
@@ -215,10 +211,12 @@ private:
 #ifdef ALOG_ACTIVE
 	#undef TRACE
 	#define TRACE ALog::Inst()->Log
+	#define TRACE_UNSAFE ALog::Inst()->LogUnsafe
 	#define TRACEST ALogStackTracer st
 	#define TRACEHWND ALog::Inst()->LogHWND
 	#define TRACEBENCH ALogBench
 #else
+	#define TRACE_UNSAFE __noop
 	#define TRACEST __noop
 	#define TRACEHWND __noop
 	$define TRACEBENCH __noop
@@ -249,6 +247,7 @@ public:
 	//---Configuration---
 	void AddViewer(AViewer* pViewer);
 	AViewer* GetViewer(INT idx);
+	AViewer* GetAutoViewer();
 	void SetOption(LogOptionEnum id, INT val);
 	INT GetOption(LogOptionEnum id);
 
@@ -265,21 +264,19 @@ public:
 
 	void LogHWND(LPCTSTR description, HWND hwnd);
 
-	void LogUnsecure(LPCTSTR description, ...);
+	void LogUnsafe(LPCTSTR description, ...);
 private:
 	ALog();
 private:
-	static AViewer* GetAutoViewer();
 	AViewer* GetViewerByID(INT viewerID, LPCTSTR iniFilePath);
 	static ALog* m_pLog;
 	INT m_option[LO_Last];
 	MultiViewer* m_pViewer;
-	__int64 m_markedTime;
 	SIZE_T m_markedMemSize;
-	CCPUTicker* m_pTicker;
 	DWORD m_MainThreadID;
-	DWORD m_StartupTicks;
+	//DWORD m_StartupTicks;
 	//MultiViewer* m_viewer;
+	CPerfTimer m_timer;
 
 };
 
@@ -301,32 +298,30 @@ public:
 };
 
 
-#ifdef USE_CPUTICKER
 class ALogBench
 {
 	static const INT maxLen = 200;
 public:
 	ALogBench(LPCTSTR funcName, BOOL bAutoStart)
 	{
-		start = 0;
 		bStopped = FALSE;
 		_tcsncpy(m_funcName, funcName, maxLen);
 		m_funcName[maxLen - 1] = 0;
 		if (bAutoStart)
-			Start();
+			m_timer.Stop();
 	}
 	void Start()
 	{
-		start = m_tick.Measure(); 
+		m_timer.Start(TRUE);
 	}
 	void Stop()
 	{
-		if (start == 0)
+		DOUBLE ms = m_timer.Elapsedms();
+		if (ms > 0)
 			TRACE(_T("ALogBench::Stop. You need to start it first."));
 		else
 		{
-			__int64 passedTime = m_tick.Measure() - start;
-			ALog::Inst()->LogUnsecure(_T("^^^[%6.5f ms] to compete '%s'\r\n"), (passedTime * 1000.0) / (DOUBLE)CCPUTicker::GetCachedCPUFrequency(), m_funcName);
+			ALog::Inst()->LogUnsafe(_T("^^^ %.3f ms to complete '%s'\r\n"), ms, m_funcName);
 			bStopped = TRUE;
 		}
 	}
@@ -336,52 +331,10 @@ public:
 			Stop();
 	}
 private:
-	CCPUTicker m_tick;
+	CPerfTimer m_timer;
 	TCHAR m_funcName[maxLen];
-	__int64 start; 
 	BOOL bStopped;
 };
-#else
-class ALogBench
-{
-	static const INT maxLen = 200;
-public:
-	ALogBench(LPCTSTR funcName, BOOL bAutoStart)
-	{
-		start = 0;
-		bStopped = FALSE;
-		_tcsncpy(m_funcName, funcName, maxLen);
-		m_funcName[maxLen - 1] = 0;
-		if (bAutoStart)
-			Start();
-	}
-	void Start()
-	{
-		start = GetTickCount(); 
-	}
-	void Stop()
-	{
-		if (start == 0)
-			TRACE(_T("ALogBench::Stop. You need to start it first."));
-		else
-		{
-			DWORD passedTime = GetTickCount() - start;
-			ALog::Inst()->LogUnsecure(_T("^^^[%6.5f ms] to compete '%s'\r\n"), (DOUBLE)passedTime, m_funcName);
-			bStopped = TRUE;
-		}
-	}
-	~ALogBench()
-	{
-		if (!bStopped)
-			Stop();
-	}
-private:
-	TCHAR m_funcName[maxLen];
-	__int64 start; 
-	BOOL bStopped;
-};
-#endif
-
 
 
 class ALogStackTracer
@@ -393,30 +346,30 @@ public:
 		_sntprintf(bf, maxLen, _T("%s p:'%s'"), funcName, param);
 		bf[maxLen - 1] = 0;
 		TRACE(_T("[IN] %s\r\n"), bf);
-		//m_startTick = GetTickCount();
+		m_timer.Start(TRUE);
 	}
 	ALogStackTracer(LPCTSTR funcName, INT param)
 	{
 		_sntprintf(bf, maxLen, _T("%s p: %d"), funcName, param);
 		bf[maxLen - 1] = 0;
 		TRACE(_T("[IN] %s\r\n"), bf);
-		//m_startTick = GetTickCount();
+		m_timer.Start(TRUE);
 	}
 	ALogStackTracer(LPCTSTR funcName)
 	{
 		_tcsncpy(bf, funcName, maxLen);
 		bf[maxLen - 1] = 0;
 		TRACE(_T("[IN] %s\r\n"), bf);
-		//m_startTick = GetTickCount();
+		m_timer.Start(TRUE);
 	}
 	~ALogStackTracer()
 	{
-		TRACE(_T("[OUT] %s\r\n"), bf);
-		//TRACE(_T("[OUT %d] %s\r\n"), GetTickCount() - m_startTick, bf);
+		m_timer.Stop();
+		ALog::Inst()->LogUnsafe(_T("[OUT] %s ^^^ %3.2f ms\r\n"), bf, m_timer.Elapsedms());
 	}
 private:
 	TCHAR bf[maxLen];
-	//DWORD m_startTick;
+	CPerfTimer m_timer;
 };
 
 

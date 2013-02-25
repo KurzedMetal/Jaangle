@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -61,6 +61,16 @@ public:
 	static Gdiplus::RectF DrawTextMeasure(Gdiplus::Graphics& graphics, LPCTSTR lpchText, int cchText, const Gdiplus::Font& font);
 	static Gdiplus::RectF DrawTextMeasure(Gdiplus::Graphics& graphics, LPCTSTR lpchText, int cchText, const LOGFONT& lf);
 
+
+	enum ImageFormatEnum
+	{
+		IF_First,
+		IF_png,
+		IF_jpg,
+		IF_Last
+	};
+
+	static BOOL CreateThumbnail(LPCTSTR srcFile, LPCTSTR thumbnailFile, ImageFormatEnum imageFormat, INT cx, INT cy);
 
 };
 

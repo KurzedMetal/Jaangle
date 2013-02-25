@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -25,7 +25,6 @@
 #include "PrgAPI.h"
 #include "SQLManager.h"
 
-#include "InformationProviders/CachedImageInfoProvider/CachedImageInfoProvider.h"
 #include "InformationProviders/DirImageInfoProvider/DirImageInfoProvider.h"
 //#include "InformationProviders/CompositeInfoProvider/CompositeInfoProvider.h"
 //#include "InformationProviders/InfoProviderRequestHelper.h"
@@ -40,8 +39,8 @@
 LocalPictureManager::LocalPictureManager():
 m_pCIIP(NULL),
 m_pDIIP(NULL),
-m_bEnableFolderImages(TRUE),
-m_pThumbnailCache(NULL)
+m_bEnableFolderImages(TRUE)/*,
+m_pThumbnailCache(NULL)*/
 {
 	for (INT i = IIT_Unknown; i < IIT_Last; i++)
 		m_defDrawer[i] = &m_defGlobal;
@@ -50,7 +49,9 @@ m_pThumbnailCache(NULL)
 
 LocalPictureManager::~LocalPictureManager()
 {
-	delete m_pThumbnailCache;
+	if (m_mainPictures.IsDirty())
+		m_mainPictures.Save(m_mainPicturesPath.c_str());
+	//delete m_pThumbnailCache;
 	//delete m_pCIIP;
 	//delete m_pDIIP;
 }
@@ -69,8 +70,6 @@ BOOL LocalPictureManager::Init(LPCTSTR storagePath)
 		m_pDIIP->SetSQLManager(pAPI->GetSQLManager());
 		pIPF->RegisterInfoProvider(m_pDIIP, FALSE);
 
-
-
 		m_defGlobal.LoadResourceID(IDR_PNG_ARTIST, _T("png"));
 		m_defGlobal.SetBkColor(RGB(0,0,0), 0);
 		m_defGlobal.GetDrawParams().zoomLockMode = GdiPlusPicDrawer::ZLM_FillArea;
@@ -80,64 +79,48 @@ BOOL LocalPictureManager::Init(LPCTSTR storagePath)
 	}
 	m_pCIIP->SetStoragePath(storagePath);
 
-	m_pThumbnailCache = new GdiPlusBitmapCache(64, 64, 80);
+	//m_pThumbnailCache = new GdiPlusBitmapCache(64, 64, 80);
 	//m_pThumbnailCache = new GdiPlusBitmapCache(96, 96, 50);
 	//m_pThumbnailCache = new GdiPlusBitmapCache(128, 128, 100);
 
+	TCHAR thumbnailStorage[MAX_PATH];
+	_sntprintf(thumbnailStorage, MAX_PATH, _T("%sthumbnails\\"), storagePath);
+
+	m_thumbnails.SetStoragePath(thumbnailStorage);
+	m_thumbnails.SetThumbnailMode(TRUE);
+	m_thumbnails.SetThumbnailSize(32,32);
+
+	m_mainPicturesPath = storagePath;
+	m_mainPicturesPath += _T("main.inf");
+	m_mainPictures.Load(m_mainPicturesPath.c_str());
 
 	return TRUE;
 }
 
-static const LPCTSTR sThumbsDB = _T("thumbs.db");
-
-void LocalPictureManager::LoadState(LPCTSTR stateRoot)
+void LocalPictureManager::RemoveArtistPicture(LPCTSTR artist, LPCTSTR imagePath)
 {
-	TRACEST(_T("LocalPictureManager::LoadState"));
-	ASSERT(m_pThumbnailCache != NULL);//=== You must call Init first
-	if (m_pThumbnailCache != NULL)
-	{
-		std::tstring thumbsDB(stateRoot);
-		thumbsDB += sThumbsDB;
-		m_pThumbnailCache->LoadState(thumbsDB.c_str());
-	}
-}
-
-void LocalPictureManager::SaveState(LPCTSTR stateRoot)
-{
-	TRACEST(_T("LocalPictureManager::SaveState"));
-	ASSERT(m_pThumbnailCache != NULL);//=== You must call Init first
-	if (m_pThumbnailCache != NULL)
-	{
-		std::tstring thumbsDB(stateRoot);
-		thumbsDB += sThumbsDB;
-		m_pThumbnailCache->SaveState(thumbsDB.c_str());
-	}
-}
-
-void LocalPictureManager::RemoveArtistPicture(const ArtistRecord& rec, LPCTSTR imagePath)
-{
-	ResetArtistCache(rec);
 	DeleteFile(imagePath);
-	//=== No need to check if this is the default picture. GetMain...Picture will detect it
+	DeleteArtistThumbnails(artist);
+	//=== No need to check if this is the main picture. GetMain...Picture will detect it and it will erase it automatically
 }
-void LocalPictureManager::RemoveAlbumPicture(const FullAlbumRecord& rec, LPCTSTR imagePath)
+void LocalPictureManager::RemoveAlbumPicture(LPCTSTR artist, LPCTSTR album, LPCTSTR imagePath)
 {
-	ResetAlbumCache(rec);
 	DeleteFile(imagePath);
-	//=== No need to check if this is the default picture. GetMain...Picture will detect it
+	DeleteAlbumThumbnails(artist, album);
+	//=== No need to check if this is the main picture. GetMain...Picture will detect it and it will erase it automatically
 }
 
 
 
-BOOL LocalPictureManager::AddArtistPicture(const ArtistRecord& rec, LPCTSTR imagePath)
+BOOL LocalPictureManager::AddArtistPicture(LPCTSTR artist, LPCTSTR imagePath)
 {
 	TRACEST(_T("LocalPictureManager::AddArtistPicture"));
-	ASSERT(rec.IsValid() && imagePath != NULL);
+	ASSERT(artist != NULL && imagePath != NULL);
 	ASSERT(m_pCIIP != NULL);
-	if (m_pCIIP == NULL || !rec.IsValid() || imagePath == NULL)	return FALSE;
+	if (m_pCIIP == NULL || imagePath == NULL)	return FALSE;
 
 	IInfoProvider::Request req(IInfoProvider::SRV_ArtistImage);
-	req.artist = rec.name.c_str();
+	req.artist = artist;
 
 	if (m_pCIIP->OpenRequest(req))
 	{
@@ -147,8 +130,8 @@ BOOL LocalPictureManager::AddArtistPicture(const ArtistRecord& rec, LPCTSTR imag
 		res.service = IInfoProvider::SRV_ArtistImage;
 		if (m_pCIIP->AddResult(res))
 		{
-			if (GetMainArtistPicture(rec) == NULL)
-				ResetArtistCache(rec);
+			//if (GetMainArtistPicture(artist) == NULL)
+			//	ResetArtistCache(artist);
 			return TRUE;
 		}
 	}
@@ -157,16 +140,16 @@ BOOL LocalPictureManager::AddArtistPicture(const ArtistRecord& rec, LPCTSTR imag
 
 
 }
-BOOL LocalPictureManager::AddAlbumPicture(const FullAlbumRecord& rec, LPCTSTR imagePath)
+BOOL LocalPictureManager::AddAlbumPicture(LPCTSTR artist, LPCTSTR album, LPCTSTR imagePath)
 {
 	TRACEST(_T("LocalPictureManager::AddAlbumPicture"));
-	ASSERT(rec.IsValid() && imagePath != NULL);
+	ASSERT(artist != NULL && album != NULL && imagePath != NULL);
 	ASSERT(m_pCIIP != NULL);
-	if (m_pCIIP == NULL || !rec.IsValid() || imagePath == NULL)	return FALSE;
+	if (m_pCIIP == NULL || artist==NULL || album==NULL || imagePath == NULL)	return FALSE;
 
 	IInfoProvider::Request req(IInfoProvider::SRV_AlbumImage);
-	req.artist = rec.artist.name.c_str();
-	req.album = rec.album.name.c_str();
+	req.artist = artist;
+	req.album = album;
 
 	if (m_pCIIP->OpenRequest(req))
 	{
@@ -176,43 +159,60 @@ BOOL LocalPictureManager::AddAlbumPicture(const FullAlbumRecord& rec, LPCTSTR im
 		res.service = IInfoProvider::SRV_AlbumImage;
 		if (m_pCIIP->AddResult(res))
 		{
-			if (GetMainAlbumPicture(rec) == NULL)
-				ResetAlbumCache(rec);
+			//if (GetMainAlbumPicture(artist, album) == NULL)
+			//	ResetAlbumCache(artist, album);
 			return TRUE;
 		}
 	}
 	return FALSE;
 }
 
-void LocalPictureManager::SetMainArtistPicture(const ArtistRecord& rec, LPCTSTR path)
+UINT LocalPictureManager::CRC32forArtist(LPCTSTR artist)
 {
-	ResetArtistCache(rec);
-	PicRecord pr(IIT_ArtistPicture, rec.ID);
-	pr.path = path;
-	pr.pictureType = PT_Main;
-	PRGAPI()->GetSQLManager()->AddOrUpdatePicRecord(pr);
+	TCHAR bf[MAX_PATH];
+	_sntprintf(bf, MAX_PATH, _T("AR_%s"), artist);
+	bf[MAX_PATH - 1] = 0;
+	return CalcCRC32(bf);
+}
+UINT LocalPictureManager::CRC32forAlbum(LPCTSTR artist, LPCTSTR album)
+{
+	TCHAR bf[MAX_PATH];
+	_sntprintf(bf, MAX_PATH, _T("AL_%s_%s"), artist, album);
+	bf[MAX_PATH - 1] = 0;
+	return CalcCRC32(bf);
 }
 
-void LocalPictureManager::SetMainAlbumPicture(const FullAlbumRecord& rec, LPCTSTR path)
+DWORD LocalPictureManager::CalcCRC32(LPCTSTR text)
 {
-	ResetAlbumCache(rec);
-	PicRecord pr(IIT_AlbumPicture, rec.album.ID);
-	pr.path = path;
-	pr.pictureType = PT_Main;
-	PRGAPI()->GetSQLManager()->AddOrUpdatePicRecord(pr);
+	return m_crc32.CalcCRC((LPVOID)text, _tcslen(text) * sizeof(TCHAR));
 }
 
 
-BOOL LocalPictureManager::GetArtistPictures(const ArtistRecord& rec, std::tstringvector& col)
+void LocalPictureManager::SetMainArtistPicture(LPCTSTR artist, LPCTSTR path)
+{
+	//ResetArtistCache(artist);
+	m_mainPictures.Set(CRC32forArtist(artist), path);
+	DeleteArtistThumbnails(artist);
+}
+
+void LocalPictureManager::SetMainAlbumPicture(LPCTSTR artist, LPCTSTR album, LPCTSTR path)
+{
+	//ResetAlbumCache(artist, album);
+	m_mainPictures.Set(CRC32forAlbum(artist, album), path);
+	DeleteAlbumThumbnails(artist, album);
+}
+
+
+BOOL LocalPictureManager::GetArtistPictures(LPCTSTR artist, std::tstringvector& col)
 {
 	//TRACEST(_T("LocalPictureManager::GetArtistPictures"));
-	ASSERT(rec.IsValid());
+	ASSERT(artist != NULL);
 	ASSERT(m_pCIIP != NULL);
-	if (m_pCIIP == NULL || !rec.IsValid())	return FALSE;
-	if (rec.name.empty())					return FALSE;
-	if (rec.name[0] == '[')					return FALSE;
+	if (m_pCIIP == NULL)					return FALSE;
+	if (artist == NULL)						return FALSE;
+	if (artist[0] == '[')					return FALSE;
 	IInfoProvider::Request req(IInfoProvider::SRV_ArtistImage);
-	req.artist = rec.name.c_str();
+	req.artist = artist;
 	if (m_pCIIP->OpenRequest(req))
 	{
 		IInfoProvider::Result res;
@@ -226,19 +226,19 @@ BOOL LocalPictureManager::GetArtistPictures(const ArtistRecord& rec, std::tstrin
 	}
 	return FALSE;
 }
-BOOL LocalPictureManager::GetAlbumPictures(const FullAlbumRecord& rec, std::tstringvector& col)
+BOOL LocalPictureManager::GetAlbumPictures(LPCTSTR artist, LPCTSTR album, std::tstringvector& col)
 {
 	//TRACEST(_T("LocalPictureManager::GetAlbumPictures"));
-	ASSERT(rec.IsValid());
+	ASSERT(artist != NULL && album != NULL);
 	ASSERT(m_pCIIP != NULL);
-	if (m_pCIIP == NULL || !rec.IsValid())	return FALSE;
-	if (rec.album.name.empty())				return FALSE;
-	if (rec.album.name[0] == '[')			return FALSE;
-	if (rec.artist.name.empty())			return FALSE;
-	if (rec.artist.name[0] == '[')			return FALSE;
+	if (m_pCIIP == NULL)	return FALSE;
+	if (artist == NULL)				return FALSE;
+	if (artist[0] == '[')			return FALSE;
+	if (album == NULL)				return FALSE;
+	if (album[0] == '[')			return FALSE;
 	IInfoProvider::Request req(IInfoProvider::SRV_AlbumImage);
-	req.artist = rec.artist.name.c_str();
-	req.album = rec.album.name.c_str();
+	req.artist = artist;
+	req.album = album;
 	IInfoProvider::Result res;
 	INT images = 0;
 	if (m_bEnableFolderImages && m_pDIIP != NULL)
@@ -298,15 +298,15 @@ BOOL LocalPictureManager::GetAlbumPictures(const FullAlbumRecord& rec, std::tstr
 //	}
 //}
 
-LPCTSTR LocalPictureManager::GetFirstArtistPicture(const ArtistRecord& rec)
+LPCTSTR LocalPictureManager::GetFirstArtistPicture(LPCTSTR artist)
 {
-	ASSERT(rec.IsValid());
+	ASSERT(artist != NULL);
 	ASSERT(m_pCIIP != NULL);
-	if (m_pCIIP == NULL || !rec.IsValid())	return FALSE;
-	if (rec.name.empty())					return FALSE;
-	if (rec.name[0] == '[')					return FALSE;
+	if (m_pCIIP == NULL)				return FALSE;
+	if (artist == NULL)					return FALSE;
+	if (artist[0] == '[')				return FALSE;
 	IInfoProvider::Request req(IInfoProvider::SRV_ArtistImage);
-	req.artist = rec.name.c_str();
+	req.artist = artist;
 	if (m_pCIIP->OpenRequest(req))
 	{
 		IInfoProvider::Result res;
@@ -315,16 +315,16 @@ LPCTSTR LocalPictureManager::GetFirstArtistPicture(const ArtistRecord& rec)
 	}
 	return NULL;
 }
-LPCTSTR LocalPictureManager::GetFirstAlbumPicture(const FullAlbumRecord& rec)
+LPCTSTR LocalPictureManager::GetFirstAlbumPicture(LPCTSTR artist, LPCTSTR album)
 {
-	if (m_pCIIP == NULL || !rec.IsValid())	return FALSE;
-	if (rec.album.name.empty())				return FALSE;
-	if (rec.album.name[0] == '[')			return FALSE;
-	if (rec.artist.name.empty())			return FALSE;
-	if (rec.artist.name[0] == '[')			return FALSE;
+	if (m_pCIIP == NULL)			return FALSE;
+	if (artist == NULL)				return FALSE;
+	if (artist[0] == '[')			return FALSE;
+	if (album == NULL)				return FALSE;
+	if (album[0] == '[')			return FALSE;
 	IInfoProvider::Request req(IInfoProvider::SRV_AlbumImage);
-	req.artist = rec.artist.name.c_str();
-	req.album = rec.album.name.c_str();
+	req.artist = artist;
+	req.album = album;
 
 	if (m_bEnableFolderImages && m_pDIIP != NULL)
 	{
@@ -344,248 +344,355 @@ LPCTSTR LocalPictureManager::GetFirstAlbumPicture(const FullAlbumRecord& rec)
 	return NULL;
 }
 
-LPCTSTR LocalPictureManager::GetMainArtistPicture(const ArtistRecord& rec)
+BOOL LocalPictureManager::GetArtistThumbnail(LPCTSTR artist, INT width, INT height, LPTSTR bf, UINT bfLen)
 {
-	ASSERT(rec.IsValid());
-	ASSERT(rec.IsValid());
-	if (!rec.IsValid())	
-		return FALSE;
-	if (rec.name[0] == '[')
-		return NULL;
-	CacheContainer::iterator it = m_artists.find(rec.ID);
-	if (it == m_artists.end())
+	ASSERT(artist != NULL);
+	ASSERT(bf != NULL && bfLen >= MAX_PATH);
+	ASSERT(m_pCIIP != NULL);
+	ASSERT(artist != NULL);
+	if (m_pCIIP == NULL)			return FALSE;
+	if (artist[0] == '[')			return FALSE;
+	IInfoProvider::Request req(IInfoProvider::SRV_ArtistImage);
+	req.artist = artist;
+	m_thumbnails.SetThumbnailSize(width, height);
+	if (m_thumbnails.OpenRequest(req))
 	{
-		//TRACEST(_T("@4 LocalPictureManager::GetMainArtistPicture (Uncached)"));
-		//=== This is the first request. We will try to find one
-		//=== First Try the ArtistsPic Table
-		SQLManager* pSM = PRGAPI()->GetSQLManager();
-		PicRecord apr(IIT_ArtistPicture, rec.ID);
-		if (pSM->GetPicRecord(apr))
+		IInfoProvider::Result res;
+		if (m_thumbnails.GetNextResult(res))
 		{
-			//=== A db entry already exists. Lets check if the file exists.
-			if (_taccess(apr.path.c_str(), 4) == 0)
+			_tcsncpy(bf, res.main, bfLen);
+			return TRUE;
+		}
+		LPCTSTR imagePath = GetMainArtistPicture(artist, TRUE);
+		if (imagePath != NULL)
+		{
+			IInfoProvider::Result res;
+			res.main = imagePath;
+			res.additionalInfo = _T("");
+			res.service = IInfoProvider::SRV_ArtistImage;
+			if (m_thumbnails.AddResult(res))
+				return GetArtistThumbnail(artist, width, height, bf, bfLen);
+		}
+	}
+	return FALSE;
+}
+
+void LocalPictureManager::DeleteArtistThumbnails(LPCTSTR artist)
+{
+	IInfoProvider::Request req(IInfoProvider::SRV_ArtistImage);
+	req.artist = artist;
+	if (m_thumbnails.OpenRequest(req))
+	{
+		IInfoProvider::Result res;
+		if (m_thumbnails.GetNextResult(res))
+		{
+			TCHAR bf[MAX_PATH];
+			_tcsncpy(bf, res.main, MAX_PATH);
+			LPTSTR undPos = _tcsrchr(bf, _T('_'));
+			if (undPos != NULL)
 			{
-				//=== Exists. All OK. Add to cache and return the path
-				m_artists[rec.ID] = apr.path;
-				//TRACE(_T("@3 LocalPictureManager::GetMainArtistPicture. Found In DB\r\n"));
-				return m_artists[rec.ID].c_str();
-			}
-			else
-			{
-				//=== Does NOT Exist. Maybe it is deleted from the FS. Adjust the database				apr.path.clear();
-				TRACE(_T("@1 LocalPictureManager::GetMainArtistPicture. Found In DB but not in FS\r\n"));
-				pSM->DeletePicRecord(apr.infoType, rec.ID);
+				undPos[1] = 0;
+				_tcscat(bf, _T("*.*"));
+				CFileFind finder;
+				BOOL bWorking = finder.FindFile(bf);
+				while (bWorking)
+				{
+					bWorking = finder.FindNextFile();
+					DeleteFile(finder.GetFilePath());
+				}
 			}
 		}
-		//=== The Picture does NOT exist in the database (OR it is does not exist in the FS anymore)
-		//=== Get The Picture with the normal way
-		LPCTSTR pic = GetFirstArtistPicture(rec);
-		if (pic != NULL)
-		{
-			//TRACE(_T("@3 LocalPictureManager::GetMainArtistPicture. Found In Folder\r\n"));
-			//=== We have a picture. Let's cache it to the database.
-			SetMainArtistPicture(rec, pic);
-			//=== Let's cache it here and return the record
-			m_artists[rec.ID] = pic;
-			return m_artists[rec.ID].c_str();
-		}
-		//=== No Pictures found
-		//TRACE(_T("@3 LocalPictureManager::GetMainArtistPicture. Picture Not Found\r\n"));
-		m_artists[rec.ID] = _T("");
-		return NULL;
 	}
-	else if (!(*it).second.empty())
+}
+void LocalPictureManager::DeleteAlbumThumbnails(LPCTSTR artist, LPCTSTR album)
+{
+	IInfoProvider::Request req(IInfoProvider::SRV_AlbumImage);
+	req.artist = artist;
+	req.album = album;
+	if (m_thumbnails.OpenRequest(req))
 	{
-		if (_taccess((*it).second.c_str(), 4) == 0)
-			return (*it).second.c_str();//Return Cached answer
-		TRACE(_T("@1 LocalPictureManager::GetMainArtistPicture. A previously cached Picture has ot been found\r\n"));
-		m_artists.erase(it);
+		IInfoProvider::Result res;
+		if (m_thumbnails.GetNextResult(res))
+		{
+			TCHAR bf[MAX_PATH];
+			_tcsncpy(bf, res.main, MAX_PATH);
+			LPTSTR undPos = _tcsrchr(bf, _T('_'));
+			if (undPos != NULL)
+			{
+				undPos[1] = 0;
+				_tcscat(bf, _T("*.*"));
+				CFileFind finder;
+				BOOL bWorking = finder.FindFile(bf);
+				while (bWorking)
+				{
+					bWorking = finder.FindNextFile();
+					DeleteFile(finder.GetFilePath());
+				}
+			}
+		}
 	}
+}
+
+
+
+
+
+BOOL LocalPictureManager::GetAlbumThumbnail(LPCTSTR artist, LPCTSTR album, INT width, INT height, LPTSTR bf, UINT bfLen)
+{
+	if (artist == NULL || album == NULL)		return FALSE;
+	if (artist[0] == '[')						return FALSE;
+	if (album[0] == '[')						return FALSE;
+	IInfoProvider::Request req(IInfoProvider::SRV_AlbumImage);
+	req.artist = artist;
+	req.album = album;
+	m_thumbnails.SetThumbnailSize(width, height);
+	if (m_thumbnails.OpenRequest(req))
+	{
+		IInfoProvider::Result res;
+		if (m_thumbnails.GetNextResult(res))
+		{
+			_tcsncpy(bf, res.main, bfLen);
+			return TRUE;
+		}
+		LPCTSTR imagePath = GetMainAlbumPicture(artist, album, TRUE);
+		if (imagePath != NULL)
+		{
+			IInfoProvider::Result res;
+			res.main = imagePath;
+			res.additionalInfo = _T("");
+			res.service = IInfoProvider::SRV_AlbumImage;
+			if (m_thumbnails.AddResult(res))
+				return GetAlbumThumbnail(artist, album, width, height, bf, bfLen);
+		}
+
+	}
+	return FALSE;
+}
+
+
+
+LPCTSTR LocalPictureManager::GetMainArtistPicture(LPCTSTR artist, BOOL bUseAnyPictureIfNotAvailable)
+{
+	ASSERT(artist != NULL);
+	if (artist == NULL)					return NULL;
+	if (artist[0] == '[')				return NULL;
+
+	UINT crc32 = CRC32forArtist(artist);
+	LPCTSTR path = m_mainPictures.Get(crc32);
+	if (path != NULL)
+	{
+		if (PathFileExists(path))
+			return path;
+		m_mainPictures.Remove(crc32);
+	}
+	if (bUseAnyPictureIfNotAvailable)
+		return GetFirstArtistPicture(artist);
 	return NULL;
 }
-LPCTSTR LocalPictureManager::GetMainAlbumPicture(const FullAlbumRecord& rec)
+
+
+LPCTSTR LocalPictureManager::GetMainAlbumPicture(LPCTSTR artist, LPCTSTR album, BOOL bUseAnyPictureIfNotAvailable)
 {
-	//TRACEST(_T("LocalPictureManager::GetMainAlbumPicture"));
-	ASSERT(rec.IsValid());
-	if (!rec.IsValid())	
-		return FALSE;
-	if (rec.album.name[0] == '[' || rec.artist.name[0] == '[' )
-		return NULL;
-	CacheContainer::iterator it = m_albums.find(rec.album.ID);
-	if (it == m_albums.end())
+	ASSERT(artist != NULL && album != NULL);
+	if (artist == NULL || album == NULL)					return NULL;
+	if (artist[0] == '[' || album[0] == '[')				return NULL;
+
+	UINT crc32 = CRC32forAlbum(artist, album);
+	LPCTSTR path = m_mainPictures.Get(crc32);
+	if (path != NULL)
 	{
-		//TRACEST(_T("LocalPictureManager::GetMainAlbumPicture (Uncached)"));
-		//=== This is the first request. We will try to find one
-		//=== First Try the AlbumsPic Table
-		SQLManager* pSM = PRGAPI()->GetSQLManager();
-		PicRecord apr(IIT_AlbumPicture, rec.album.ID);
-		if (pSM->GetPicRecord(apr))
-		{
-			//=== A db entry already exists. Lets check if the file exists.
-			if (_taccess(apr.path.c_str(), 4) == 0)
-			{
-				//=== Exists. All OK. Add to cache and return the path
-				m_albums[rec.album.ID] = apr.path;
-				return m_albums[rec.album.ID].c_str();
-			}
-			else
-			{
-				//=== Does NOT Exist. Maybe it is deleted from the FS. Adjust the database				apr.path.clear();
-				pSM->DeletePicRecord(apr.infoType, rec.album.ID);
-			}
-		}
-		//=== The Picture does NOT exist in the database (OR it is does not exist in the FS anymore)
-		//=== Get The Picture with the normal way
-		LPCTSTR pic = GetFirstAlbumPicture(rec);
-		if (pic != NULL)
-		{
-			//=== We have a picture. Let's cache it to the database.
-			apr.path = pic;
-			apr.pictureType = PT_Main;
-			pSM->AddOrUpdatePicRecord(apr);
-			//=== Let's cache it here and return the record
-			m_albums[rec.album.ID] = pic;
-			return m_albums[rec.album.ID].c_str();
-		}
-		//=== No Pictures found
-		m_albums[rec.album.ID] = _T("");
-		return NULL;
+		if (PathFileExists(path))
+			return path;
+		m_mainPictures.Remove(crc32);
 	}
-	else if (!(*it).second.empty())
-	{
-		if (_taccess((*it).second.c_str(), 4) == 0)
-			return (*it).second.c_str();//Return Cached answer
-		TRACE(_T("@1 LocalPictureManager::GetMainAlbumPicture. A previously cached Picture has not been found\r\n"));
-		m_albums.erase(it);
-	}
+	if (bUseAnyPictureIfNotAvailable)
+		return GetFirstAlbumPicture(artist, album);
 	return NULL;
-
 }
 
-void LocalPictureManager::ResetArtistCache(const ArtistRecord& rec)
-{
-	//=== Reset Session Cache
-	TRACEST(_T("LocalPictureManager::ClearCachedArtistPicture"));
-	ASSERT(rec.IsValid());
-	if (rec.IsValid())	
-	{
-		CacheContainer::iterator it = m_artists.find(rec.ID);
-		if (it != m_artists.end())
-			m_artists.erase(it);
-	}
-
-	//=== Reset DB Cache
-	SQLManager* pSM = PRGAPI()->GetSQLManager();
-	pSM->DeletePicRecord(IIT_ArtistPicture, rec.ID);
-}
-void LocalPictureManager::ResetAlbumCache(const FullAlbumRecord& rec)
-{
-	//=== Reset Session Cache
-	TRACEST(_T("LocalPictureManager::ClearCachedAlbumPicture"));
-	ASSERT(rec.IsValid());
-	if (rec.IsValid())
-	{
-		CacheContainer::iterator it = m_albums.find(rec.album.ID);
-		if (it != m_albums.end())
-			m_albums.erase(it);
-	}
-	//=== Reset DB Cache
-	SQLManager* pSM = PRGAPI()->GetSQLManager();
-	pSM->DeletePicRecord(IIT_AlbumPicture, rec.album.ID);
-
-}
-
-DWORD LocalPictureManager::CalculateCacheUID(InfoItemTypeEnum iit, UINT itemID)
-{
-	return (itemID & 0xFFFFFF) | ((iit & 0xff) << 24);//=== 1 byte iit + 3bytes for the ID
-	//return MAKELONG(iit, itemID);//=== 2 bytes iit + 2bytes ID
-}
-
-BOOL LocalPictureManager::DrawDefaultThumbnail(InfoItemTypeEnum iit, HDC hdc, RECT& rcDest)
-{
-	return DrawDefaultThumbnail(iit, Gdiplus::Graphics(hdc), Gdiplus::Rect(rcDest.left, rcDest.top, rcDest.right - rcDest.left, rcDest.bottom - rcDest.top));
-}
+//void LocalPictureManager::ResetArtistCache(LPCTSTR artist)
+//{
+//	ASSERT(0);
+//	//=== Reset Session Cache
+//	//TRACEST(_T("LocalPictureManager::ClearCachedArtistPicture"));
+//	//ASSERT(rec.IsValid());
+//	//if (rec.IsValid())	
+//	//{
+//	//	CacheContainer::iterator it = m_artists.find(rec.ID);
+//	//	if (it != m_artists.end())
+//	//		m_artists.erase(it);
+//	//}
+//
+//	////=== Reset DB Cache
+//	//SQLManager* pSM = PRGAPI()->GetSQLManager();
+//	//pSM->DeletePicRecord(IIT_ArtistPicture, rec.ID);
+//}
+//void LocalPictureManager::ResetAlbumCache(LPCTSTR artist, LPCTSTR album)
+//{
+//	ASSERT(0);
+//
+//	////=== Reset Session Cache
+//	//TRACEST(_T("LocalPictureManager::ClearCachedAlbumPicture"));
+//	//ASSERT(rec.IsValid());
+//	//if (rec.IsValid())
+//	//{
+//	//	CacheContainer::iterator it = m_albums.find(rec.album.ID);
+//	//	if (it != m_albums.end())
+//	//		m_albums.erase(it);
+//	//}
+//	////=== Reset DB Cache
+//	//SQLManager* pSM = PRGAPI()->GetSQLManager();
+//	//pSM->DeletePicRecord(IIT_AlbumPicture, rec.album.ID);
+//
+//}
 
 BOOL LocalPictureManager::DrawDefaultThumbnail(InfoItemTypeEnum iit, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest)
 {
 	return m_defDrawer[iit]->Draw(g, rcDest);
 }
 
-BOOL LocalPictureManager::DrawThumbnail(InfoItemTypeEnum iit, UINT itemID, HDC hdc, RECT& rcDest)
+BOOL LocalPictureManager::DrawArtistThumbnail(LPCTSTR artist, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest)
 {
-	return DrawThumbnail(iit, itemID, Gdiplus::Graphics(hdc), Gdiplus::Rect(rcDest.left, rcDest.top, rcDest.right - rcDest.left, rcDest.bottom - rcDest.top));
-}
-
-
-BOOL LocalPictureManager::DrawThumbnail(InfoItemTypeEnum iit, UINT itemID, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest)
-{
-	DWORD uid = CalculateCacheUID(iit, itemID);
-	PrgAPI* pAPI = PRGAPI();
-	InfoDownloadManager* pDM = pAPI->GetInfoDownloadManager();
-	BOOL bRet = FALSE;
-	if (itemID > 0)
+	TCHAR picPath[MAX_PATH];
+	if (GetArtistThumbnail(artist, rcDest.Width, rcDest.Height, picPath, MAX_PATH))
 	{
-		switch (iit)
-		{
-		case IIT_ArtistPicture:
-			bRet = m_pThumbnailCache->Draw(uid, g, rcDest);
-			if (bRet == FALSE)
-			{
-				ArtistRecord rec;
-				if (pAPI->GetSQLManager()->GetArtistRecord(itemID, rec))
-				{
-					LPCTSTR picPath = GetMainArtistPicture(rec);
-					if (picPath != NULL)
-					{
-						INT nItem = m_pThumbnailCache->SetByPath(uid, picPath);
-						if (nItem != -1)
-							bRet = m_pThumbnailCache->DrawItem(nItem, g, rcDest);
-						else
-							TRACE(_T("@1 LocalPictureManager::DrawThumbnail Failed at '%s'\r\n"), picPath);
-					}
-					else
-					{
-						//=== We don't have the picture.
-						//=== Ask for a download
-						pDM->RequestArtistPic(rec);
-					}
-				}
-			}
-			break;
-		case IIT_AlbumPicture:
-			bRet = m_pThumbnailCache->Draw(uid, g, rcDest);
-			if (bRet == FALSE)
-			{
-				FullAlbumRecordSP rec;
-				if (pAPI->GetSQLManager()->GetFullAlbumRecordByID(rec, itemID))
-				{
-					LPCTSTR picPath = GetMainAlbumPicture(*rec);
-					if (picPath != NULL)
-					{
-						INT nItem = m_pThumbnailCache->SetByPath(uid, picPath);
-						if (nItem != -1)
-							bRet = m_pThumbnailCache->Draw(uid, g, rcDest);
-						else
-							TRACE(_T("@1 LocalPictureManager::DrawThumbnail Failed at '%s'\r\n"), picPath);
-					}
-					else
-					{
-						//=== We don't have the picture. Ask for a download
-						pDM->RequestAlbumPic(rec->album, rec->artist.name.c_str());
-					}
-				}
-			}
-			break;
-		default:
-			break;
-			//bRet = FALSE;
-		}
+		if (m_picDrawer.LoadFile(picPath))
+			return m_picDrawer.Draw(g, rcDest);
+
+		//INT nItem = m_pThumbnailCache->SetByPath(CRC32forArtist(artist), picPath);
+		//if (nItem != -1)
+		//	bRet = m_pThumbnailCache->DrawItem(nItem, g, rcDest);
+		//else
+		//	TRACE(_T("@1 LocalPictureManager::DrawArtistThumbnail Failed at '%s'\r\n"), picPath);
 	}
 	else
 	{
-		//Should be various
-		INT debug = 0;
+		//=== We don't have the picture.
+		//=== Ask for a download
+		PRGAPI()->GetInfoDownloadManager()->RequestArtistPic(artist);
 	}
-	return bRet;
+	return FALSE;
 }
+
+
+BOOL LocalPictureManager::DrawAlbumThumbnail(LPCTSTR artist, LPCTSTR album, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest)
+{
+	TCHAR picPath[MAX_PATH];
+	if (GetAlbumThumbnail(artist, album, rcDest.Width, rcDest.Height, picPath, MAX_PATH))
+	{
+		if (m_picDrawer.LoadFile(picPath))
+			return m_picDrawer.Draw(g, rcDest);
+		//INT nItem = m_pThumbnailCache->SetByPath(CRC32forAlbum(artist, album), picPath);
+		//if (nItem != -1)
+		//	bRet = m_pThumbnailCache->DrawItem(nItem, g, rcDest);
+		//else
+		//	TRACE(_T("@1 LocalPictureManager::DrawAlbumThumbnail Failed at '%s'\r\n"), picPath);
+	}
+	else
+	{
+		//=== We don't have the picture.
+		//=== Ask for a download
+		PRGAPI()->GetInfoDownloadManager()->RequestAlbumPic(artist, album);
+	}
+	return FALSE;
+}
+
+//BOOL LocalPictureManager::DrawThumbnail(InfoItemTypeEnum iit, UINT itemID, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest)
+//{
+//	DWORD uid = CalculateCacheUID(iit, itemID);
+//	PrgAPI* pAPI = PRGAPI();
+//	InfoDownloadManager* pDM = pAPI->GetInfoDownloadManager();
+//	BOOL bRet = FALSE;
+//	if (itemID > 0)
+//	{
+//		switch (iit)
+//		{
+//		case IIT_ArtistPicture:
+//			{
+//				DWORD tick1, tick2, tick3, tick4, tick5, tick6;
+//				tick1 = GetTickCount();
+//				bRet = m_pThumbnailCache->Draw(uid, g, rcDest);
+//				tick2 = GetTickCount();
+//				
+//				if (bRet == FALSE)
+//				{
+//					ArtistRecord rec;
+//					if (pAPI->GetSQLManager()->GetArtistRecord(itemID, rec))
+//					{
+//						tick3 = GetTickCount();
+//						TCHAR picPath[MAX_PATH];
+//						if (GetArtistThumbnail(rec, rcDest.Width, rcDest.Height, picPath, MAX_PATH))
+//						{
+//							tick4 = GetTickCount();
+//
+//							INT nItem = m_pThumbnailCache->SetByPath(uid, picPath);
+//							tick5 = GetTickCount();
+//
+//							if (nItem != -1)
+//								bRet = m_pThumbnailCache->DrawItem(nItem, g, rcDest);
+//							else
+//								TRACE(_T("@1 LocalPictureManager::DrawThumbnail Failed at '%s'\r\n"), picPath);
+//							tick6 = GetTickCount();
+//
+//							TCHAR bf[1000];
+//							_sntprintf(bf, 1000, _T("LocalPictureManager::DrawThumbnail timings...\r\n")
+//								_T("  m_pThumbnailCache->Draw: %d\r\n" )
+//								_T("  GetSQLManager()->GetArtistRecord: %d\r\n" )
+//								_T("  GetArtistThumbnail: %d\r\n" )
+//								_T("  m_pThumbnailCache->SetByPath: %d\r\n" )
+//								_T("  m_pThumbnailCache->DrawItem: %d\r\n" ),
+//								tick2 - tick1,
+//								tick3 - tick2,
+//								tick4 - tick3,
+//								tick5 - tick4,
+//								tick6 - tick5);
+//							TRACE(bf);
+//						}
+//						else
+//						{
+//							//=== We don't have the picture.
+//							//=== Ask for a download
+//							pDM->RequestArtistPic(rec);
+//						}
+//					}
+//
+//			}
+//			}
+//			break;
+//		case IIT_AlbumPicture:
+//			bRet = m_pThumbnailCache->Draw(uid, g, rcDest);
+//			if (bRet == FALSE)
+//			{
+//				FullAlbumRecordSP rec;
+//				if (pAPI->GetSQLManager()->GetFullAlbumRecordByID(rec, itemID))
+//				{
+//					LPCTSTR picPath = GetMainAlbumPicture(*rec);
+//					if (picPath != NULL)
+//					{
+//						INT nItem = m_pThumbnailCache->SetByPath(uid, picPath);
+//						if (nItem != -1)
+//							bRet = m_pThumbnailCache->Draw(uid, g, rcDest);
+//						else
+//							TRACE(_T("@1 LocalPictureManager::DrawThumbnail Failed at '%s'\r\n"), picPath);
+//					}
+//					else
+//					{
+//						//=== We don't have the picture. Ask for a download
+//						pDM->RequestAlbumPic(rec->album, rec->artist.name.c_str());
+//					}
+//				}
+//			}
+//			break;
+//		default:
+//			break;
+//			//bRet = FALSE;
+//		}
+//	}
+//	else
+//	{
+//		//Should be various
+//		INT debug = 0;
+//	}
+//	return bRet;
+//}
 

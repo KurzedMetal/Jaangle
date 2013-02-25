@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -25,11 +25,18 @@
 
 class IInfoProvider;
 class DirImageInfoProvider;
-class CachedImageInfoProvider;
+//class CachedImageInfoProvider;
 
 #include "DataRecords.h"
 #include "GuiControls/GdiPlusBitmapCache.h"
 #include "GuiControls/GdiPlusPicDrawer.h"
+#include "InformationProviders/CachedImageInfoProvider/CachedImageInfoProvider.h"
+#include "CRC32.h"
+#include "UINTtoStringMapping.h"
+
+
+
+
 
 class LocalPictureManager
 {
@@ -40,62 +47,75 @@ public:
 public:
 	BOOL Init(LPCTSTR StoragePath);
 
-	void LoadState(LPCTSTR stateRoot);
-	void SaveState(LPCTSTR stateRoot);
-
-	BOOL AddArtistPicture(const ArtistRecord& rec, LPCTSTR imagePath);
-	BOOL GetArtistPictures(const ArtistRecord& rec, std::tstringvector& col);
-	LPCTSTR GetMainArtistPicture(const ArtistRecord& rec);
-	void RemoveArtistPicture(const ArtistRecord& rec, LPCTSTR imagePath);
-	void ResetArtistCache(const ArtistRecord& rec);
-	void SetMainArtistPicture(const ArtistRecord& rec, LPCTSTR path);
+	BOOL AddArtistPicture(LPCTSTR artist, LPCTSTR imagePath);
+	BOOL GetArtistPictures(LPCTSTR artist, std::tstringvector& col);
+	BOOL GetArtistThumbnail(LPCTSTR artist, INT width, INT height, LPTSTR bf, UINT bfLen);
+	LPCTSTR GetMainArtistPicture(LPCTSTR artist, BOOL bUseAnyPictureIfNotAvailable);
+	void RemoveArtistPicture(LPCTSTR artist, LPCTSTR imagePath);
+	//void ResetArtistCache(LPCTSTR artist);
+	void SetMainArtistPicture(LPCTSTR artist, LPCTSTR path);
 
 
-	BOOL AddAlbumPicture(const FullAlbumRecord& rec, LPCTSTR imagePath);
-	BOOL GetAlbumPictures(const FullAlbumRecord& rec, std::tstringvector& col);
-	LPCTSTR GetMainAlbumPicture(const FullAlbumRecord& rec);
-	void RemoveAlbumPicture(const FullAlbumRecord& rec, LPCTSTR imagePath);
-	void ResetAlbumCache(const FullAlbumRecord& rec);
-	void SetMainAlbumPicture(const FullAlbumRecord& rec, LPCTSTR path);
+	BOOL AddAlbumPicture(LPCTSTR artist, LPCTSTR album, LPCTSTR imagePath);
+	BOOL GetAlbumPictures(LPCTSTR artist, LPCTSTR album, std::tstringvector& col);
+	BOOL GetAlbumThumbnail(LPCTSTR artist, LPCTSTR album, INT width, INT height, LPTSTR bf, UINT bfLen);
+	LPCTSTR GetMainAlbumPicture(LPCTSTR artist, LPCTSTR album, BOOL bUseAnyPictureIfNotAvailable);
+	void RemoveAlbumPicture(LPCTSTR artist, LPCTSTR album, LPCTSTR imagePath);
+	//void ResetAlbumCache(LPCTSTR artist, LPCTSTR album);
+	void SetMainAlbumPicture(LPCTSTR artist, LPCTSTR album, LPCTSTR path);
 
 	//=== Returns TRUE if a vaild picture have been found and correctly drawn
-	BOOL DrawThumbnail(InfoItemTypeEnum iit, UINT itemID, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest);
-	BOOL DrawThumbnail(InfoItemTypeEnum iit, UINT itemID, HDC hdc, RECT& rcDest);
-
+	BOOL DrawArtistThumbnail(LPCTSTR artist, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest);
+	BOOL DrawAlbumThumbnail(LPCTSTR artist, LPCTSTR album, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest);
 	BOOL DrawDefaultThumbnail(InfoItemTypeEnum iit, Gdiplus::Graphics& g, Gdiplus::Rect& rcDest);
-	BOOL DrawDefaultThumbnail(InfoItemTypeEnum iit, HDC hdc, RECT& rcDest);
 
 
 	void EnableFolderImages(BOOL bEnable)		{m_bEnableFolderImages = bEnable;}
 	BOOL IsFolderImagesEnabled()				{return m_bEnableFolderImages;}
 
-	void SetDefaultThumbnail(InfoItemTypeEnum iit, Gdiplus::Image* pImage);
-	Gdiplus::Image* GetDefaultThumbnail(InfoItemTypeEnum iit);
+	//void SetDefaultThumbnail(InfoItemTypeEnum iit, Gdiplus::Image* pImage);
+	//Gdiplus::Image* GetDefaultThumbnail(InfoItemTypeEnum iit);
 
 	//void ProcessFailedRequests();
 
 private:
-	LPCTSTR GetFirstArtistPicture(const ArtistRecord& rec);
-	LPCTSTR GetFirstAlbumPicture(const FullAlbumRecord& rec);
+	LPCTSTR GetFirstArtistPicture(LPCTSTR artist);
+	LPCTSTR GetFirstAlbumPicture(LPCTSTR artist, LPCTSTR album);
 	DWORD CalculateCacheUID(InfoItemTypeEnum iit, UINT itemID);
+	void DeleteArtistThumbnails(LPCTSTR artist);
+	void DeleteAlbumThumbnails(LPCTSTR artist, LPCTSTR album);
+	UINT CRC32forArtist(LPCTSTR artist);
+	UINT CRC32forAlbum(LPCTSTR artist, LPCTSTR album);
+	DWORD CalcCRC32(LPCTSTR text);
 	//void RequestArtistPicDownload(const FullArtistRecordSP& rec);
 	//void RequestAlbumPicDownload(const FullAlbumRecordSP& rec);
 private:
 	BOOL m_bEnableFolderImages;
 
-	GdiPlusBitmapCache* m_pThumbnailCache; 
+	//GdiPlusBitmapCache* m_pThumbnailCache; 
 
 
 
 	CachedImageInfoProvider* m_pCIIP;
 	DirImageInfoProvider* m_pDIIP;
-	typedef std::map<UINT, std::tstring> CacheContainer;
-	CacheContainer m_artists;
-	CacheContainer m_albums;
+	//typedef std::map<UINT, std::tstring> CacheContainer;
+	//CacheContainer m_artists;
+	//CacheContainer m_albums;
 
 	GdiPlusPicDrawer m_defGlobal;
 	GdiPlusPicDrawer m_defAlbum;
 	GdiPlusPicDrawer* m_defDrawer[IIT_Last];
+
+	CachedImageInfoProvider m_thumbnails;
+
+
+	UINTtoStringMapping m_mainPictures;
+	std::basic_string<TCHAR> m_mainPicturesPath;
+
+
+
+	CRC32 m_crc32;
+	GdiPlusPicDrawer m_picDrawer;
 
 
 	//std::list<FullArtistRecordSP> m_failedArtistRequests;

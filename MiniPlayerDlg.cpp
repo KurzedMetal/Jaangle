@@ -197,9 +197,6 @@ BOOL CMiniPlayerDlg::Create(CWnd* pParent)
 		m_volumeSlider.SetMaxPos(100);
 		//m_mute.Create(NULL, WS_CHILDWINDOW | WS_VISIBLE, CRect(0,0,0,0), this, ID_BUTTONSID + 50);
 
-
-
-
 		ApplyTranslation(*pAPI->GetTranslationManager());
 		ApplySkin(pAPI->GetSkinManager()->GetSkin());
 		UpdateInfo(FALSE);
@@ -666,6 +663,14 @@ void CMiniPlayerDlg::Serialize(BOOL load)
 		INT x,y;
 		params->Read(SettingsCategory, _T("LEFT"), (int&) x, 400);
 		params->Read(SettingsCategory, _T("TOP"), (int&) y, 0);
+		CRect rc;
+		GetWindowRect(&rc);
+		INT screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		if (x > screenWidth - 10)
+			x = 100;
+		INT screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		if (y > screenHeight - screenHeight)
+			y = screenHeight - screenHeight;
 		SetWindowPos(&CWnd::wndTopMost, x,y,0,0,SWP_NOSIZE | SWP_NOACTIVATE);
 	}
 	else

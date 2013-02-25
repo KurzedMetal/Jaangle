@@ -60,12 +60,7 @@ class CSearchDlg;
 
 
 
-//LPCTSTR const sKeyEnter = _T("enter");
-//LPCTSTR const sKeyBack = _T("back");
-//LPCTSTR const sKeyInsert = _T("insert");
-//LPCTSTR const sKeyHome = _T("home");
-//LPCTSTR const sKeyNumPad = _T("numpad");
-//
+
 enum AppOptionsEnum
 {
 	OPT_Unknown = -1,
@@ -149,6 +144,44 @@ enum AppOptionsEnum
 	OPT_Last
 };//* Remember to update the Option2Info in .cpp 
 
+
+enum PathsEnum
+{
+	PATH_First,
+
+	PATH_UserRoot,					//=== CSIDL_APPDATA -> "X:\Users\username\AppData\Local" + "\Jaangle\";
+	PATH_CommonRoot,				//=== PATH_ExeRoot //It was ... CSIDL_COMMON_APPDATA -> "X:\Users\username\AppData\Local" + "\Jaangle\";
+
+	PATH_LastTracksFile,			//=== PATH_UserRoot + "lastTracks.m3u"
+	PATH_SettingsFile,				//=== PATH_UserRoot + "Settings.ini"
+	PATH_LoggingFile,				//=== PATH_UserRoot + "Debug.log"
+	PATH_CrashLogFile,				//=== PATH_UserRoot + "Crash.log"
+	PATH_StorageRoot,				//=== PATH_UserRoot + "Storage\"
+	PATH_DatabaseRoot,				//=== PATH_StorageRoot + "Database\"			* NEED TO MOVE DATA FROM Legacy
+	PATH_ImagesRoot,				//=== PATH_StorageRoot + "Images\"				* NEED TO MOVE DATA
+	PATH_SkinsRoot,					//=== PATH_CommonRoot + "Skins\"
+	PATH_TranslationsRoot,			//=== PATH_CommonRoot + "Translations\"
+	PATH_TranslationsReferenceFile,	//=== PATH_TranslationsRoot + "translation.ref"
+	PATH_TranslationsReferenceFileUser,	//=== PATH_UserRoot + "translation.ref"
+	PATH_WebServicesRoot,			//=== PATH_CommonRoot + "WebServices\"
+	PATH_TempRoot,					//=== PATH_CommonRoot + "WebServices\"
+
+	//=== GetModuleFileName
+	PATH_ExeRoot,						//=== "X:\Program Files\Jaangle\"
+
+	PATH_Last
+};
+
+enum PathsLegacyEnum
+{
+	PATHLEGACY_First,
+	PATHLEGACY_StorageRoot,				//=== It was in \Storage\ [Move to] PATH_UserDatabasePath
+	PATHLEGACY_SkinRoot,				//=== It was in \Skins\ [Move to] PATH_CommonSkinRoot
+	PATHLEGACY_TranslationsRoot,		//=== It was in \Langs\ [Move to] PATH_CommonTranslationsRoot
+	PATHLEGACY_WebServicesRoot,			//=== It was int \WebServices\ [Move to] PATH_CommonWebServicesRoot
+	PATHLEGACY_DatabaseRoot,			//=== It was int \music.mdb [Move to] PATH_UserDatabasePath
+	PATHLEGACY_Last
+};
 
 enum AppStringOptionsEnum
 {
@@ -360,12 +393,6 @@ public:
 
 	//---Fonts
 	CFont* GetFont(APP_FONTS fon);
-	//---Colors
-	//void RegisterColorControl(ICtrlColors* pCtrl, LPCTSTR ctrlName);
-	//void UnRegisterColorControl(ICtrlColors* pCtrl);
-	//void RefreshColorControls();
-	//BOOL SaveSkin(LPCTSTR dirPath);
-	//BOOL GetSkinColor(LPCTSTR section, LPCTSTR clrName, COLORREF& clr);
 	//---Icons
 	HICON GetIcon(APP_ICONS icon);
 	HICON GetIconForTrackType(TrackTypesEnum tt);
@@ -503,6 +530,7 @@ private:
 	void ReadOptions();
 	void WriteOptions();
 
+
 	//Returns the directory where the exe resides. (Including the last '\')
 	//DWORD GetMacAddressHash();
 	//--------------------------------------------------------
@@ -529,6 +557,9 @@ public:
 
 	ITSMenu* CreatePopupMenu();
 
+	void TryToTransferOldSettingsIfAvailable();
+
+
 
 
 //public:
@@ -545,28 +576,17 @@ public:
 //private:
 //	UINT m_baseFontSize;
 //	std::tstring m_baseFontName;
+	LPCTSTR GetPathLegacy(PathsLegacyEnum pathType, LPTSTR buffer);
+	static LPCTSTR GetPath(PathsEnum pathType, LPTSTR buffer);
 
 private:
-	enum PathsEnum
-	{
-		PATH_First,
-		
-		PATH_AppRoot,
-		PATH_StorageRoot,
-		PATH_SkinRoot,
-		PATH_TranslationsRoot,
-		PATH_WebServicesRoot,
-		PATH_UserRoot,
-		PATH_DatabaseRoot,
 
-		PATH_LastM3UFile,
-		PATH_ServicesXMLFile,
-		PATH_ServicesUserXMLFile,
-		
-		PATH_Last
-	};
-	LPCTSTR GetPath(PathsEnum pathType, LPTSTR buffer = NULL);
-	TCHAR m_tempPath[MAX_PATH];
+	//LPCTSTR GetPath(PathsEnum pathType, LPTSTR buffer = NULL);
+
+	//TCHAR m_tempPath[MAX_PATH];
+	static TCHAR m_userRootPath[MAX_PATH];
+	static TCHAR m_commonRootPath[MAX_PATH];
+
 };
 
 

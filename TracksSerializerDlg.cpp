@@ -178,6 +178,8 @@ void CTracksSerializerDlg::OnSize(UINT nType, int cx, int cy)
 
 void CTracksSerializerDlg::PositionControls(int cx, int cy)
 {
+	if (cx == 0 || cy == 0)
+		return;
 	if (m_description.m_hWnd != NULL)
 	{
 		const int headerHeight = 40;

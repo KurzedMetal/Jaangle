@@ -668,9 +668,11 @@ void TrayToolTipDlg::Draw(CDC& dc)
 			LPCTSTR imgPath = NULL;
 			FullAlbumRecordSP albumRec;
 			if (pSM->GetFullAlbumRecordByID(albumRec, rec->album.ID))
-				imgPath = pLPM->GetMainAlbumPicture(*albumRec);
-			if (imgPath == NULL)
-				imgPath = pLPM->GetMainArtistPicture(albumRec->artist);
+			{
+				imgPath = pLPM->GetMainAlbumPicture(albumRec->artist.name.c_str(), albumRec->album.name.c_str(), TRUE);
+				if (imgPath == NULL)
+					imgPath = pLPM->GetMainArtistPicture(albumRec->artist.name.c_str(), TRUE);
+			}
 
 			if (imgPath != NULL)
 			{

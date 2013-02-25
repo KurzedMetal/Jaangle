@@ -201,10 +201,6 @@ void MenuManager::AppendServicesMenu(ITSMenu& mnu, ItemTypeEnum it)
 {
 	PrgAPI* pAPI = PRGAPI();
 	ServicesRegistrationSrv* pSRS = pAPI->GetServicesRegistrationSrv();
-	TCHAR appPath[MAX_PATH];
-	GetModuleFileName(0, appPath, MAX_PATH);
-	LPTSTR pos = _tcsrchr(appPath, '\\');
-	pos[0] = 0;
 	INT added = 0;
 	for (INT i = 0; i < (INT)pSRS->GetServicesCount(); i++)
 	{

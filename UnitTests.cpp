@@ -58,7 +58,7 @@ BOOL RunTests()
 	//UNITTEST(TestCFolderDialog());
 	//UNITTEST(BassEngine::UnitTest());
 	//UNITTEST(DShowEngine::UnitTest());
-	UNITTEST(AppMonitor::UnitTest());
+	//UNITTEST(AppMonitor::UnitTest());
 	//UNITTEST(PrgAPI::UnitTest());
 	//UNITTEST(FileNameParser::UnitTest());
 	//UNITTEST(SQLManager::UnitTest());

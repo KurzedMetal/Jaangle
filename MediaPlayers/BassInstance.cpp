@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -366,6 +366,8 @@ BOOL BassInstance::IsFileSupported(LPCTSTR str)
 	ASSERT(str != NULL);
 	INT len = _tcslen(str);
 	ASSERT(len >= 4);
+	if (_tcsncmp(str, _T("cda:\\"), 6) == 0)
+		return TRUE;
 	if (len >= 4)
 	{
 		LPCTSTR filePath = &str[len - 4];

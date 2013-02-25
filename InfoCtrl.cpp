@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -592,7 +592,7 @@ UINT CInfoCtrl::AssignArtistImages()
 	PrgAPI* pAPI = PRGAPI();
 	LocalPictureManager* pLPM = pAPI->GetLocalPictureManager();
 	std::tstringvector col;
-	if (pLPM->GetArtistPictures(m_curFTRecord->artist, col))
+	if (pLPM->GetArtistPictures(m_curFTRecord->artist.name.c_str(), col))
 	{
 		m_showingItems.push_back(IIT_ArtistPicture);
 		for (size_t i=0; i < col.size(); i++)
@@ -620,7 +620,7 @@ UINT CInfoCtrl::AssignAlbumImages()
 	FullAlbumRecord rec;
 	rec.artist = m_curFTRecord->artist;
 	rec.album = m_curFTRecord->album;
-	if (pLPM->GetAlbumPictures(rec, col))
+	if (pLPM->GetAlbumPictures(rec.artist.name.c_str(), rec.album.name.c_str(), col))
 	{
 		m_showingItems.push_back(IIT_AlbumPicture);
 		const INT bfLen = 500;

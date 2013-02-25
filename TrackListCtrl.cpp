@@ -147,15 +147,16 @@ void TrackListCtrl::DrawItem(Gdiplus::Graphics& g, INT nItem, Gdiplus::Rect& ite
 
 	if (m_bDrawPictures)
 	{
-		INT imgHeight = rcSubItem.Height() - 2 * cMargin;
+		INT imgHeight = 32;//rcSubItem.Height() - 2 * cMargin;
 		INT cury = rcSubItem.top + cMargin;
 		LocalPictureManager* pLM = PRGAPI()->GetLocalPictureManager();
-		CRect rcImage(curx, cury, curx + imgHeight, cury + imgHeight);
-		BOOL bRet = pLM->DrawThumbnail(IIT_AlbumPicture, rec->album.ID, hdc, rcImage);
+		Gdiplus::Rect rcImage(curx, cury, imgHeight, imgHeight);
+		Graphics g2(hdc);
+		BOOL bRet = pLM->DrawAlbumThumbnail(rec->artist.name.c_str(), rec->album.name.c_str(), g2, rcImage);
 		if (!bRet)
-			bRet = pLM->DrawThumbnail(IIT_ArtistPicture, rec->artist.ID, hdc, rcImage);
+			bRet = pLM->DrawArtistThumbnail(rec->artist.name.c_str(), g2, rcImage);
 		if (!bRet)
-			bRet = pLM->DrawDefaultThumbnail(IIT_AlbumPicture, hdc, rcImage);
+			bRet = pLM->DrawDefaultThumbnail(IIT_AlbumPicture, g2, rcImage);
 
 		curx += 32 + cMargin ;
 

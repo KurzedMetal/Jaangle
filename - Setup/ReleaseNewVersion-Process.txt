@@ -1,0 +1,26 @@
+- Create the setup "jsetup.exe"
+- Zip it to "jsetup.zip"
+- Zip the files to "jfiles.zip"
+- Open ftp.artificialspirit.com/sites/jaangle.com/files/
+- Rename jsetup --to--> jsetup_98b_965.exe and move the files to old
+- Upload the files and close FileZilla
+- Go to http://www.jaangle.com/overview (login to "About" with alex")
+- Go to Administer -> Blocks-> Latest Program Version - Configure and change the program version - Pres "Save Block"
+- Go to http://www.jaangle.com/whatsnew and add the changes (like the previous ones)
+- Move the "FINISHED" tag on changelog.txt to HISTORY
+
+
+(Wait)
+
+- Go to http://www.snapfiles.com/dev/ press "Update" to submit the change...
+- Fill "Change to:" field and "Changes in this update" from changelog.txt
+
+(wait)
+
+- Open ftp.artificialspirit.com/services/tsvercheck.php
+- Change $onlineFileVersion =... '0.98.970.0';
+- Save
+
+
+
+

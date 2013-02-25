@@ -1,4 +1,4 @@
-ο»Ώ//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -37,9 +37,9 @@ BOOL TestStlStringUtils()
 	UNITTEST(replace(tst1, _T("was"), _T("is"), 1) == 1);
 	UNITTEST(tst1 == _T("This was a test"));
 
-	std::string ansi = "Ξ•Ξ»Ξ»Ξ·Ξ½ΞΉΞΊΞ¬ ΟΟ€Ο‰Ο‚ Ξ Ξ¬Ξ½Ο„Ξ†. English";
+	std::string ansi = "Ελληνικά όπως ΠάντΆ. English";
 	UNITTEST(Ansi2Unicode(tst1, ansi));
-	UNITTEST(tst1 == _T("Ξ•Ξ»Ξ»Ξ·Ξ½ΞΉΞΊΞ¬ ΟΟ€Ο‰Ο‚ Ξ Ξ¬Ξ½Ο„Ξ†. English"));
+	UNITTEST(tst1 == _T("Ελληνικά όπως ΠάντΆ. English"));
 
 
 #ifdef _VECTOR_
@@ -48,7 +48,7 @@ BOOL TestStlStringUtils()
 	UNITTEST(vec[0] == tst1);
 	vec.clear();
 	UNITTEST(splitString(tst1, std::tstring(_T(". ")), vec, FALSE) == 1);
-	UNITTEST(vec[0] == _T("οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½ οΏ½οΏ½οΏ½οΏ½ οΏ½οΏ½οΏ½οΏ½"));
+	UNITTEST(vec[0] == _T("Ελληνικά όπως ΠάντΆ"));
 	UNITTEST(vec[1] == _T("English"));
 #endif
 	return TRUE;

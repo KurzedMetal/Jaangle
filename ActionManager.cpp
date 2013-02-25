@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -249,7 +249,7 @@ BOOL ActionManager::ShowArtistPropertiesDlg(FullArtistRecordSP& rec, CWnd* pPare
 	CMultiPicturePage Pic(IDS_ARTISTPICTURE);
 	ps.AddPage(&Pic);
 	std::tstringvector col;
-	if (pLPM->GetArtistPictures(rec->artist, col))
+	if (pLPM->GetArtistPictures(rec->artist.name.c_str(), col))
 	{
 		CMultiPicturePage::PicInfo pInfo;
 		PicRecord pr(IIT_ArtistPicture, rec->artist.ID);
@@ -302,7 +302,7 @@ BOOL ActionManager::ShowArtistPropertiesDlg(FullArtistRecordSP& rec, CWnd* pPare
 			{
 				//=== Otherwise the artist picture will remain the same
 				pAPI->GetInfoDownloadManager()->ResetArtistCache(rec->artist);
-				pAPI->GetLocalPictureManager()->ResetArtistCache(rec->artist);
+				//pAPI->GetLocalPictureManager()->ResetArtistCache(rec->artist.name.c_str());
 				bModifyTracks = TRUE;
 				rec->artist.name = MainPage.Artist;
 				//All the TracksTags with artID= must be modified
@@ -342,16 +342,16 @@ BOOL ActionManager::ShowArtistPropertiesDlg(FullArtistRecordSP& rec, CWnd* pPare
 				switch (pi.status)
 				{
 				case CMultiPicturePage::PS_Removed:
-					pLPM->RemoveArtistPicture(rec->artist, pi.path);
+					pLPM->RemoveArtistPicture(rec->artist.name.c_str(), pi.path);
 					//DeleteFile(pi.path);
 					break;
 				//case CMultiPicturePage::PS_Normal:
 				case CMultiPicturePage::PS_AddedByFile:
-					pLPM->AddArtistPicture(rec->artist, pi.path);
+					pLPM->AddArtistPicture(rec->artist.name.c_str(), pi.path);
 					fs = GetFileSize(pi.path);
 					break;
 				case CMultiPicturePage::PS_AddedByClipboard:
-					pLPM->AddArtistPicture(rec->artist, pi.path);
+					pLPM->AddArtistPicture(rec->artist.name.c_str(), pi.path);
 					fs = GetFileSize(pi.path);
 					DeleteFile(pi.path);
 					break;
@@ -363,17 +363,17 @@ BOOL ActionManager::ShowArtistPropertiesDlg(FullArtistRecordSP& rec, CWnd* pPare
 				if (pi.bDefault == TRUE)
 				{
 					if (fs == 0)
-						pLPM->SetMainArtistPicture(rec->artist, pi.path);
+						pLPM->SetMainArtistPicture(rec->artist.name.c_str(), pi.path);
 					else
 					{
 						std::tstringvector col;
-						pLPM->GetArtistPictures(rec->artist, col);
+						pLPM->GetArtistPictures(rec->artist.name.c_str(), col);
 						std::tstringvector::const_iterator it = col.begin();
 						for (;it!=col.end();it++)
 						{
 							if (GetFileSize(it->c_str()) == fs)
 							{
-								pLPM->SetMainArtistPicture(rec->artist, it->c_str());
+								pLPM->SetMainArtistPicture(rec->artist.name.c_str(), it->c_str());
 								break;
 							}
 						}
@@ -417,7 +417,7 @@ BOOL ActionManager::ShowAlbumPropertiesDlg(FullAlbumRecordSP& rec, CWnd* pParent
 	CMultiPicturePage Pic(IDS_ALBUMPICTURE);
 	ps.AddPage(&Pic);
 	std::tstringvector col;
-	if (pLPM->GetAlbumPictures(*rec, col))
+	if (pLPM->GetAlbumPictures(rec->artist.name.c_str(), rec->album.name.c_str(), col))
 	{
 		CMultiPicturePage::PicInfo pInfo;
 		PicRecord pr(IIT_AlbumPicture, rec->album.ID);
@@ -454,7 +454,7 @@ BOOL ActionManager::ShowAlbumPropertiesDlg(FullAlbumRecordSP& rec, CWnd* pParent
 			{
 				//=== Otherwise the album picture will remain the same
 				pAPI->GetInfoDownloadManager()->ResetAlbumCache(rec->album, rec->artist.name.c_str());
-				pAPI->GetLocalPictureManager()->ResetAlbumCache(*rec);
+				//pAPI->GetLocalPictureManager()->ResetAlbumCache(rec->artist.name.c_str(), rec->album.name.c_str());
 				bModifyTracks = TRUE;
 				rec->album.name = MainPage.Album;
 			}
@@ -496,16 +496,16 @@ BOOL ActionManager::ShowAlbumPropertiesDlg(FullAlbumRecordSP& rec, CWnd* pParent
 				switch (pi.status)
 				{
 				case CMultiPicturePage::PS_Removed:
-					pLPM->RemoveAlbumPicture(*rec, pi.path);
+					pLPM->RemoveAlbumPicture(rec->artist.name.c_str(), rec->album.name.c_str(), pi.path);
 					//DeleteFile(pi.path);
 					break;
 				//case CMultiPicturePage::PS_Normal:
 				case CMultiPicturePage::PS_AddedByFile:
-					pLPM->AddAlbumPicture(*rec, pi.path);
+					pLPM->AddAlbumPicture(rec->artist.name.c_str(), rec->album.name.c_str(), pi.path);
 					fs = GetFileSize(pi.path);
 					break;
 				case CMultiPicturePage::PS_AddedByClipboard:
-					pLPM->AddAlbumPicture(*rec, pi.path);
+					pLPM->AddAlbumPicture(rec->artist.name.c_str(), rec->album.name.c_str(), pi.path);
 					fs = GetFileSize(pi.path);
 					DeleteFile(pi.path);
 					break;
@@ -517,18 +517,18 @@ BOOL ActionManager::ShowAlbumPropertiesDlg(FullAlbumRecordSP& rec, CWnd* pParent
 				if (pi.bDefault == TRUE)
 				{
 					if (fs == 0)
-						pLPM->SetMainAlbumPicture(*rec, pi.path);
+						pLPM->SetMainAlbumPicture(rec->artist.name.c_str(), rec->album.name.c_str(), pi.path);
 					else
 					{
 						//=== This handles the case that the user add a new picture and set it default
 						std::tstringvector col;
-						pLPM->GetAlbumPictures(*rec, col);
+						pLPM->GetAlbumPictures(rec->artist.name.c_str(), rec->album.name.c_str(), col);
 						std::tstringvector::const_iterator it = col.begin();
 						for (;it!=col.end();it++)
 						{
 							if (GetFileSize(it->c_str()) == fs)
 							{
-								pLPM->SetMainAlbumPicture(*rec, it->c_str());
+								pLPM->SetMainAlbumPicture(rec->artist.name.c_str(), rec->album.name.c_str(), it->c_str());
 								break;
 							}
 						}
@@ -2292,334 +2292,6 @@ void ActionManager::ShowMainWindow()
 	else
 		AfxGetMainWnd()->PostMessage(WM_SYSCOMMAND, SC_RESTORE);
 }
-
-
-//void ActionManager::ShowMiniPlayer(BOOL bShow)
-//{
-//	if (bShow)
-//	{
-//		PrgAPI* pAPI = PRGAPI();
-//		if (m_pMiniPlayerDlg == NULL)
-//		{
-//			m_pMiniPlayerDlg = new CMiniPlayerDlg;
-//			m_pMiniPlayerDlg->Create(CWnd::GetDesktopWindow());
-//			m_pMiniPlayerDlg->SetTransparency((BYTE) pAPI->GetOption(OPT_MINIPLR_Transparency));
-//		}
-//		if (!m_pMiniPlayerDlg->IsWindowVisible())
-//			m_pMiniPlayerDlg->ShowWindow(SW_SHOW);
-//		SetMiniPlayerOptions();
-//	}
-//	else
-//	{
-//		if (m_pMiniPlayerDlg == NULL)
-//			return;
-//		m_pMiniPlayerDlg->ShowWindow(SW_HIDE);
-//	}
-//}
-
-//void ActionManager::DestroyMiniPlayer()
-//{
-//	if (m_pMiniPlayerDlg != NULL)
-//	{
-//		GetMiniPlayerOptions();
-//		m_pMiniPlayerDlg->DestroyWindow();
-//		delete m_pMiniPlayerDlg;
-//		m_pMiniPlayerDlg = NULL;
-//	}
-//}
-
-//void ActionManager::DestroyAdvancedSearchDlg()
-//{
-//	if (m_pSearchDlg != NULL)
-//	{
-//		m_pSearchDlg->DestroyWindow();
-//		delete m_pSearchDlg;
-//		m_pSearchDlg = NULL;
-//	}
-//}
-
-//void ActionManager::GetMiniPlayerOptions()
-//{
-//	if (m_pMiniPlayerDlg != NULL)
-//	{
-//		PrgAPI* pAPI = PRGAPI();
-//		pAPI->SetOption(OPT_MINIPLR_Transparency, m_pMiniPlayerDlg->GetTransparency());
-//		pAPI->SetOption(OPT_MINIPLR_ShowTooltips, m_pMiniPlayerDlg->IsToolTipsEnabled());
-//		pAPI->SetOption(OPT_MINIPLR_ShowExtraInfo, m_pMiniPlayerDlg->IsExtraInfoEnabled());
-//		pAPI->SetOption(OPT_MINIPLR_MaxSize, m_pMiniPlayerDlg->GetMaxSize());
-//		pAPI->SetOption(OPT_MINIPLR_ForceOnTop, m_pMiniPlayerDlg->GetForceOnTop());
-//		pAPI->SetOption(OPT_MINIPLR_ForceOnTopDelay, m_pMiniPlayerDlg->GetForceOnTopDelay());
-//		pAPI->SetOption(OPT_MINIPLR_DisableTransparencyOnMouseOver, m_pMiniPlayerDlg->GetDisableTransparencyOnMouseOver());
-//	}
-//}
-//
-//void ActionManager::SetMiniPlayerOptions()
-//{
-//	if (m_pMiniPlayerDlg != NULL)
-//	{
-//		PrgAPI* pAPI = PRGAPI();
-//		m_pMiniPlayerDlg->SetTransparency(pAPI->GetOption(OPT_MINIPLR_Transparency));
-//		m_pMiniPlayerDlg->EnableTooltips(pAPI->GetOption(OPT_MINIPLR_ShowTooltips));
-//		m_pMiniPlayerDlg->EnableExtraInfo(pAPI->GetOption(OPT_MINIPLR_ShowExtraInfo));
-//		m_pMiniPlayerDlg->SetMaxSize(pAPI->GetOption(OPT_MINIPLR_MaxSize));
-//		m_pMiniPlayerDlg->SetForceOnTop(pAPI->GetOption(OPT_MINIPLR_ForceOnTop));
-//		m_pMiniPlayerDlg->SetForceOnTopDelay(pAPI->GetOption(OPT_MINIPLR_ForceOnTopDelay));
-//		m_pMiniPlayerDlg->SetDisableTransparencyOnMouseOver(pAPI->GetOption(OPT_MINIPLR_DisableTransparencyOnMouseOver));
-//	}
-//}
-
-
-//BOOL ActionManager::IsMiniPlayerVisible()
-//{
-//	if (m_pMiniPlayerDlg == NULL)
-//		return FALSE;
-//	return m_pMiniPlayerDlg->IsWindowVisible();
-//}
-
-//void ActionManager::UpdateMiniPlayerOptions(BOOL bShowIfManual)
-//{
-//	TRACEST(_T("ActionManager::UpdateMiniPlayerOptions."));
-//	BOOL bShowMiniPlayer = FALSE;
-//	PrgAPI* pAPI = PRGAPI();
-//
-//	switch (PRGAPI()->GetOption(OPT_MINIPLR_Behaviour))
-//	{
-//	case MPB_Automatic://Show On Minimize
-//		{
-//			BOOL bMainWindowIsVisible = AfxGetMainWnd()->IsWindowVisible();
-//			if (bMainWindowIsVisible)
-//			{
-//				//Check if it is minimized
-//				WINDOWPLACEMENT wpl;
-//				wpl.length = sizeof(WINDOWPLACEMENT);
-//				AfxGetMainWnd()->GetWindowPlacement(&wpl);
-//				bMainWindowIsVisible = !(wpl.showCmd == SW_SHOWMINIMIZED);
-//			}
-//			bShowMiniPlayer = !bMainWindowIsVisible;
-//		}
-//		break;
-//	case MPB_Always://Always Show
-//		bShowMiniPlayer = TRUE;
-//		break;
-//	case MPB_Never://NeverShow
-//		bShowMiniPlayer = FALSE;
-//		break;
-//	case MPB_Manually:
-//		bShowMiniPlayer = bShowIfManual;
-//		break;
-//	default:
-//		ASSERT(0);
-//		break;
-//	}
-//	if (m_pMiniPlayerDlg == NULL && bShowMiniPlayer ==FALSE)
-//		return;
-//	ShowMiniPlayer(bShowMiniPlayer);
-//
-//}
-
-//===ShowImportVirtualTracksDlg
-//-pRec: The collection record that will be merged. Can only be links collection
-//			If it is null it will create a new collection based on the filename
-
-//BOOL ActionManager::ShowImportCollectionDlg(FullTrackRecordCollection& rec, CWnd* pParent)
-//{
-//
-//	CFileDialog fd(FALSE, _T(".xml"), NULL, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, 
-//		_T("Track Collection Files (*.xtc)|*.xtc|Xml Files (*.xml)|*.xml|All Files (*.*)|*.*||"), NULL);
-//	if (fd.DoModal() != IDOK)
-//		return TRUE;//- No Error. User interupted the process
-//	FullTrackRecordCollection col;
-//	if (!DataRecordsXmlSerializer::Import(fd.GetPathName(), col))
-//		return FALSE;//There was an error
-//	CTracksSerializerDlg serDlg;
-//	serDlg.SetMode(TRUE);
-//	serDlg.SetFullTrackRecordCollection(col);
-//	if (serDlg.DoModal() == IDOK)
-//	{
-//		SQLManager* pSM = PRGAPI()->GetSQLManager();
-//		CollectionRecord cr;
-//		if (pRec == NULL)
-//		{
-//			cr.location = fd.GetPathName();
-//			cr.name = fd.GetFileTitle();
-//			cr.serial = 0;
-//			cr.type = CTYPE_Virtual;
-//			if (!pSM->AddNewCollectionRecord(cr))
-//			{
-//				ASSERT(0);
-//				TRACE(_T("ActionManager::ShowImportVirtualTracksDlg. Cannot add collection\r\n"))
-//				return FALSE;
-//			}
-//			pRec = &cr;
-//		}
-//		TagInfo ti;
-//		INT tracksAdded = 0;
-//		for (int i = 0; i < col.size(); i++)
-//		{
-//			if (serDlg.IsItemChecked(i) == TRUE)
-//			{
-//				FullTrackRecord& rec = col[i];
-//				ti.Album = rec.album.name;
-//				ti.Artist = rec.artist.name;
-//				ti.Bitrate = rec.track.bitrate;
-//				ti.Genre = rec.genre.name;
-//				ti.Length = rec.track.duration;
-//				ti.Rating = rec.track.rating;
-//				ti.Size = rec.track.size;
-//				ti.Title = rec.track.name;
-//				ti.TrackNo = rec.track.trackNo;
-//				ti.Year = rec.track.year;
-//				if (pSM->AddNewTrackFromTagInfo(pRec->ID, rec.track.location.c_str(), ti))
-//					tracksAdded++;
-//				else
-//				{
-//					TRACE(_T("ActionManager::ShowImportVirtualTracksDlg. Cannot add\r\n"))
-//						ASSERT(0);
-//
-//				}
-//			}
-//		}
-//		if (tracksAdded > 0)
-//			PRGAPI()->SendMessage(SM_CollectionManagerEvent);
-//	}
-//	return TRUE;//- No Error. User interupted the process
-//
-//
-//
-//
-//
-//	DatabaseManager* pDB = PRGAPI()->GetDatabaseManager();
-//
-//
-//	TagInfo* ti = NULL;
-//	LPCTSTR url = NULL;
-//	BOOL bActive = FALSE;
-//	CXmlDocumentWrapper xml;
-//	if (xml.Load(fDlg.GetPathName()))
-//	{
-//		CXmlNodeWrapper root(xml.AsNode());
-//		CString a = root.GetText();
-//		a = root.Name();
-//		if (root.IsValid() && root.Name() == xmlVTExport)
-//		{
-//			CXmlNodeWrapper trackNode(root.GetNode(xmlTrack));
-//			TagInfo ti;
-//			while (trackNode.IsValid())
-//			{
-//				CXmlNodeWrapper val(trackNode.GetNode(xmlArtist));
-//				ti.Artist = val.GetText();
-//				val = trackNode.GetNode(xmlAlbum);
-//				ti.Album = val.GetText();
-//				val = trackNode.GetNode(xmlTitle);
-//				ti.Title = val.GetText();
-//				val = trackNode.GetNode(xmlDuration);
-//				ti.Length = _ttoi(val.GetText());
-//				val = trackNode.GetNode(xmlGenre);
-//				ti.Genre = val.GetText();
-//				val = trackNode.GetNode(xmlUrl);
-//				serDlg.AddTrack(ti, val.GetText());
-//				trackNode = trackNode.GetNextSibling();
-//			}
-//		}
-//	}
-//	if (serDlg.DoModal() == IDOK)
-//	{
-//		TagInfo* ti = NULL;
-//		LPCTSTR url = NULL;
-//		BOOL bActive = FALSE;
-//		DatabaseManager* pDB = PRGAPI()->GetDatabaseManager();
-//		UINT colID = pDB->GetVirtualCollectionID();
-//		for (UINT i = 0; i < serDlg.GetCount(); i++)
-//		{
-//			serDlg.GetTrack(i, ti, url, bActive);
-//			if (bActive)
-//			{
-//				if (pDB->GetTrackID(url,colID, CTYPE_Virtual))
-//					PRGAPI()->NotifyUser(IDS_ITEMALREADYEXISTS);
-//				else
-//					pDB->AddNewTrack(*ti, url, colID, CTYPE_Virtual, TRUE);
-//			}
-//		}
-//		PRGAPI()->SendMessage(ActorMessage(SM_CollectionUpdateFinished));
-//	}
-//
-//	return FALSE;
-//
-//}
-
-//BOOL ActionManager::ShowExportVirtualTracksDlg(CWnd* pParent)
-//{
-//	ASSERT(0);//TODO
-//	return FALSE;
-	//CTracksSerializerDlg serDlg;
-	//serDlg.SetMode(FALSE);
-	//DatabaseManager* pDB = PRGAPI()->GetDatabaseManager();
-	//TracksQuery tq;
-	//if (tq.OpenByCollection(pDB->GetVirtualCollectionID(TRUE)))
-	//{
-	//	TagInfo ti;
-	//	while (!tq.IsEOF())
-	//	{
-	//		pDB->GetTagInfoFromTrackQuery(ti, tq);
-	//		TCHAR bf[MAX_PATH];
-	//		tq.GetLocation(bf);
-	//		serDlg.AddTrack(ti, bf);
-	//		tq.MoveNext();
-	//	}
-	//}
-	//if (serDlg.DoModal() == IDOK)
-	//{
-	//	TagInfo* ti = NULL;
-	//	LPCTSTR url = NULL;
-	//	BOOL bActive = FALSE;
-	//	CXmlDocumentWrapper xml;
-	//	TCHAR bf[200];
-	//	_sntprintf(bf, 200, _T("<%s></%s>"), xmlVTExport, xmlVTExport);
-	//	xml.LoadXML(bf);
-	//	CXmlNodeWrapper root = (xml.AsNode());
-	//	UINT additions = 0;
-	//	for (UINT i = 0; i < serDlg.GetCount(); i++)
-	//	{
-	//		serDlg.GetTrack(i, ti, url, bActive);
-	//		if (bActive)
-	//		{
-	//			CXmlNodeWrapper trackNode(root.InsertNode(additions, xmlTrack));
-	//			CXmlNodeWrapper node(trackNode.InsertNode(0, xmlUrl));
-	//			node.SetText(url);
-	//			node = trackNode.InsertNode(0, xmlArtist);
-	//			node.SetText(ti->Artist.c_str());
-	//			node = trackNode.InsertNode(1, xmlAlbum);
-	//			node.SetText(ti->Album.c_str());
-	//			node = trackNode.InsertNode(2, xmlTitle);
-	//			node.SetText(ti->Title.c_str());
-	//			node = trackNode.InsertNode(3, xmlGenre);
-	//			node.SetText(ti->Genre.c_str());
-	//			node = trackNode.InsertNode(3, xmlDuration);
-	//			TCHAR bf[20];
-	//			_itot(ti->Length, bf, 10);
-	//			node.SetText(bf);
-
-	//			//CXmlNodeWrapper artist(trackNode.InsertNode(1, _T("artist")));
-	//			//artist.SetText( ti->Artist.c_str());
-	//			//CXmlNodeWrapper album(trackNode.InsertNode(2, _T("album")));
-	//			//album.SetText(ti->Album.c_str());
-	//			//CXmlNodeWrapper title(trackNode.InsertNode(3, _T("title")));
-	//			//title.SetText(ti->Title.c_str());
-	//			additions++;
-	//		}
-	//	}
-	//	if (additions > 0)
-	//	{
-	//		CFileDialog fDlg(bImport, _T("xlc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("xml link collection (*.xlc)|*.xlc|All Files (*.*)|*.*|"), pParent);
-	//		if (fDlg.DoModal() != IDOK)
-	//			return FALSE;
-	//		return xml.Save(fDlg.GetPathName());
-	//	}
-	//}
-	//return FALSE;
-//
-//}
-
 
 BOOL ActionManager::ShowAddNewCollectionDlg(CWnd* pParent)
 {

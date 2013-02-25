@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -254,11 +254,14 @@ BOOL DirImageInfoProvider::IsIncluded(LPCTSTR strMain, LPCTSTR strFind, BOOL bIg
 	TCHAR sFind[MAX_PATH];
 	_tcscpy(sMain, strMain);
 	_tcscpy(sFind, strFind);
+
 	if (bIgnoreCase)
 	{
 		_tcslwr(sMain);
 		_tcslwr(sFind);
+		SetLastError(0);//=== For Some reason _tcslwr produces a 998 error
 	}
+
 	if (excludedCharacters != NULL)
 	{
 		for (UINT i = 0; i < _tcslen(excludedCharacters); i++)
@@ -314,7 +317,7 @@ BOOL DirImageInfoProvider::IsLegalPicture(LPCTSTR path, LPCTSTR albumName, BOOL 
 #ifdef _DEBUG
 	TRACE(_T("DirImageInfoProvider::IsLegalPicture. StrictSearch: %d\r\n"), bStrict);
 	if (!bStrict && !IsIncluded(path, albumName, TRUE, _T("._ -'!?")))
-		TRACE(_T("DirImageInfoProvider::IsLegalPicture. Strict wuld have failed (%s)!!!\r\n"), path);
+		TRACE(_T("DirImageInfoProvider::IsLegalPicture. Strict would have failed (%s)!!!\r\n"), path);
 #endif
 	
 	if (bStrict && !IsIncluded(path, albumName, TRUE, _T("._ -'!?")))

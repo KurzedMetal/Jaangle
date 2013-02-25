@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -73,6 +73,15 @@ BOOL InfoDownloadManager::RequestArtistInfo(ArtistRecord& rec, LPCTSTR providerN
 	req.artist = rec.name.c_str();
 	return RequestInfo(req, rec.ID, providerName, bForce, bSync, OPT_IM_AutoDlArtistBio, IIT_ArtistBio);
 }
+
+BOOL InfoDownloadManager::RequestArtistPic(LPCTSTR artist, LPCTSTR providerName, BOOL bForce, BOOL bSync)
+{
+	ArtistRecord ar;
+	if (PRGAPI()->GetSQLManager()->GetArtistRecordUnique(artist, ar))
+		return RequestArtistPic(ar, providerName, bForce, bSync);
+	return FALSE;
+}
+
 BOOL InfoDownloadManager::RequestArtistPic(ArtistRecord& rec, LPCTSTR providerName, BOOL bForce, BOOL bSync)
 {
 	//TRACEST(_T("InfoDownloadManager::RequestArtistPic"));
@@ -100,6 +109,21 @@ BOOL InfoDownloadManager::RequestAlbumInfo(AlbumRecord& rec, LPCTSTR artist, LPC
 	req.album = rec.name.c_str();
 	return RequestInfo(req, rec.ID, providerName, bForce, bSync, OPT_IM_AutoDlAlbumReview, IIT_AlbumReview);
 }
+
+
+BOOL InfoDownloadManager::RequestAlbumPic(LPCTSTR artist, LPCTSTR album, LPCTSTR providerName, BOOL bForce, BOOL bSync)
+{
+	SQLManager* pSM = PRGAPI()->GetSQLManager();
+	ArtistRecord ar;
+	if (pSM->GetArtistRecordUnique(artist, ar))
+	{
+		AlbumRecord alr;
+		if (pSM->GetAlbumRecordUnique(ar.ID, album, alr))
+			return RequestAlbumPic(alr, artist, providerName, bForce, bSync);
+	}
+	return FALSE;
+}
+
 BOOL InfoDownloadManager::RequestAlbumPic(AlbumRecord& rec, LPCTSTR artist, LPCTSTR providerName, BOOL bForce, BOOL bSync)
 {
 	//TRACEST(_T("InfoDownloadManager::RequestAlbumPic"));
@@ -481,7 +505,7 @@ BOOL InfoDownloadManager::HandleArtistPic(UINT artID, const IInfoProvider::Resul
 	ArtistRecord ar;
 	if (pSM->GetArtistRecord(artID, ar))
 	{
-		if (!pLPM->AddArtistPicture(ar, result.main))
+		if (!pLPM->AddArtistPicture(ar.name.c_str(), result.main))
 		{
 			//It happens when the same picture exists
 			return TRUE;//Request more results
@@ -522,7 +546,7 @@ BOOL InfoDownloadManager::HandleAlbumPic(UINT albID, const IInfoProvider::Result
 	FullAlbumRecordSP rec;
 	if (pSM->GetFullAlbumRecordByID(rec, albID))
 	{
-		if (!pLPM->AddAlbumPicture(*rec, result.main))
+		if (!pLPM->AddAlbumPicture(rec->artist.name.c_str(), rec->album.name.c_str(), result.main))
 		{
 			//It happens when the same picture exists
 			return TRUE;//Request more results

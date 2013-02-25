@@ -192,7 +192,7 @@ void CToolbarWnd::ConfigureRightButtons(FlexButton& btn, APP_ICONS ico)
 
 void CToolbarWnd::PositionControls(INT cx, INT cy)
 {
-	if (m_Search.m_hWnd == 0)
+	if (m_Search.m_hWnd == 0 || cx == 0 || cy == 0)
 		return;
 	UINT ySize = cy - 2 * cMargins;
 	UINT curX = cMargins;

@@ -188,7 +188,7 @@ BOOL CTeenSpiritDlg::OnInitDialog()
 	TCHAR title[100];
 	FileVersion fv;
 	GetFileVersion(fv);
-	_sntprintf(title, 100, _T("%s %d.%de"), CTeenSpiritApp::sAppTitle, fv.Major, fv.Minor);
+	_sntprintf(title, 100, _T("%s %d.%di"), CTeenSpiritApp::sAppTitle, fv.Major, fv.Minor);
 #ifdef _DEBUG
 	_sntprintf(&title[_tcslen(title)], 100, _T(" [DEBUG: %d]"), fv.Build);
 #endif
@@ -229,7 +229,10 @@ BOOL CTeenSpiritDlg::OnInitDialog()
 
 void CTeenSpiritDlg::MaximizeWindow(RECT& rcNormal)
 {
-	ModifyStyle(WS_CAPTION | WS_THICKFRAME, WS_MAXIMIZE, 0);// SWP_NOSIZE|SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE);
+	UINT style = GetWindowLong(GetSafeHwnd(), GWL_STYLE);
+	style &= ~(WS_CAPTION | WS_THICKFRAME | WS_SYSMENU);
+	style |= WS_MAXIMIZE;
+	SetWindowLong(GetSafeHwnd(), GWL_STYLE, style);
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof(WINDOWPLACEMENT);
 	wp.flags = 0;
@@ -241,12 +244,12 @@ void CTeenSpiritDlg::MaximizeWindow(RECT& rcNormal)
 	MONITORINFO mi;
 	mi.cbSize = sizeof( mi );
 	::GetMonitorInfo( mon, &mi );
-	SetWindowPos(NULL, 
+	SetWindowPos(&CWnd::wndTop, 
 		mi.rcWork.left, 
 		mi.rcWork.top, 
 		mi.rcWork.right - mi.rcWork.left, 
 		mi.rcWork.bottom - mi.rcWork.top, 
-		SWP_NOZORDER|SWP_SHOWWINDOW);
+		SWP_SHOWWINDOW|SWP_FRAMECHANGED);
 }
 
 void CTeenSpiritDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -414,6 +417,9 @@ void CTeenSpiritDlg::OnSize(UINT nType, int cx, int cy)
 
 void CTeenSpiritDlg::PositionControls(int cx, int cy)
 {
+	if (cx == 0 || cy == 0)
+		return;
+	//TRACEST(_T("CTeenSpiritDlg::PositionControls"));
 	TSSkin& skin = PRGAPI()->GetSkinManager()->GetSkin();
 	UINT cToolBarHeight = skin.GetIntParameter(CSEC_Toolbar, IPARAM_Height) + skin.GetRelativeFontSize();
 	UINT cStatusBarHeight = skin.GetIntParameter(CSEC_StatusBar, IPARAM_Height) + skin.GetRelativeFontSize();
@@ -575,7 +581,7 @@ void CTeenSpiritDlg::OnTimer(UINT nIDEvent)
 			MediaPlayer::Changes changes = pAPI->GetMediaPlayer()->GetChanges();
 			if (changes.tickPlayList >= m_monitorPlayerTick)
 				pAPI->GetStateManager()->SendMessage(SM_PlayListChanged);
-			if (changes.tickMediaChanged >= m_monitorPlayerTick)
+			if (changes.tickMediaChanged >= m_monitorPlayerTick && m_monitorPlayerTick > 0)
 				pAPI->GetStateManager()->SendMessage(SM_MediaChanged);
 			m_monitorPlayerTick = GetTickCount();
 		}
@@ -719,9 +725,9 @@ void CTeenSpiritDlg::ShowTray()
 			IDR_MAINFRAME,                 // ID of tray icon
 			FALSE,
 			NULL, 
-			NULL,//CTeenSpiritApp::sAppTitle,
+			_T(""),//CTeenSpiritApp::sAppTitle,
 			NIIF_NONE,
-			0,
+			10,
 			FALSE))
 		{
 			return;

@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -48,6 +48,13 @@
 //===================================================================
 //===================================================================
 
+class ThumbnailDrawer
+{
+public:
+	virtual BOOL DrawThumbnail(Gdiplus::Graphics& g, Gdiplus::Rect& rc)const			= 0;
+};
+
+
 static const int cMargin = 1;
 
 class MainTreeDrawerHelper
@@ -75,10 +82,11 @@ public:
 		LPCTSTR firstPart,
 		LPCTSTR secondPart,
 		INT rating,
-		BOOL bIsExpandable
+		BOOL bIsExpandable,
+		const ThumbnailDrawer* pThumbnaliDrawer
 		) const
 	{
-		HDC hdc = g.GetHDC();
+		HDC hdc = g.GetHDC(); 
 		COLORREF textColor = bIsExpandable ? expandableTextColor : notExpandableTextColor;
 		if (nfo.bSelected)
 			textColor = selectedTextColor;
@@ -103,10 +111,16 @@ public:
 
 			//=== Image
 			LocalPictureManager* pLM = PRGAPI()->GetLocalPictureManager();
-			CRect rcImage(startX + 1, startY + 1, endX - 1, endY - 1);
-			BOOL bRet = pLM->DrawThumbnail(iit, itemID, hdc, rcImage);
+			Gdiplus::Rect rcImage(startX + 1, startY + 1, endX - 2 - startX, endY - 2 - startY);
+			BOOL bRet = FALSE;
+
+			Graphics g2(hdc);
+			g2.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+			if (pThumbnaliDrawer != NULL)
+				bRet = pThumbnaliDrawer->DrawThumbnail(g2, rcImage);
 			if (!bRet)
-				bRet = pLM->DrawDefaultThumbnail(iit, hdc, rcImage);
+				PRGAPI()->GetLocalPictureManager()->DrawDefaultThumbnail(iit, g2, rcImage);
+
 			X += imgWidth + cMargin;
 			//=== Image Frame
 			HBRUSH oldBr = (HBRUSH)::SelectObject(hdc, ::GetStockObject(NULL_BRUSH));
@@ -209,7 +223,7 @@ public:
 		CFlexTreeCtrl::DrawNodeInfo& nfo, CMainTreeCtrl::GDIRes& res) const				= 0;
 };
 
-class ArtistNode: public TSNode	//--------------------------------------------
+class ArtistNode: public TSNode, public ThumbnailDrawer	//--------------------------------------------
 {
 public:
 	ArtistNode(TreeNode* parent/*, FullArtistRecordSP& rec*/)			
@@ -247,12 +261,21 @@ public:
 		ASSERT(rec.get() != NULL && rec->IsValid());
 		m_rec = rec;
 	}
+
+	virtual BOOL DrawThumbnail(Gdiplus::Graphics& g, Gdiplus::Rect& rc)	 const
+	{
+		if (m_rec.get() == NULL)
+			return FALSE;
+		return PRGAPI()->GetLocalPictureManager()->DrawArtistThumbnail(m_rec->artist.name.c_str(), g, rc);
+	}
+
+
 	virtual void Draw(Gdiplus::Graphics& g, CFlexTreeCtrl::DrawNodeInfo& nfo, CMainTreeCtrl::GDIRes& res) const
 	{
 		PrgAPI* pAPI = PRGAPI();
 		if (m_rec.get() == NULL)
 		{
-			res.pDrawer->Draw(g, nfo, res, IIT_ArtistPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable);
+			res.pDrawer->Draw(g, nfo, res, IIT_ArtistPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable, this);
 			return;
 		}
 		LPCTSTR firstPart = m_rec->artist.name.c_str();
@@ -292,7 +315,7 @@ public:
 				secondPart = bf;
 			}
 		}
-		res.pDrawer->Draw(g, nfo, res, IIT_ArtistPicture, m_rec->artist.ID, firstPart, secondPart, m_rec->artist.rating, bExpandable);
+		res.pDrawer->Draw(g, nfo, res, IIT_ArtistPicture, m_rec->artist.ID, firstPart, secondPart, m_rec->artist.rating, bExpandable, this);
 
 	}
 
@@ -301,7 +324,7 @@ private:
 	FullArtistRecordSP m_rec;
 };
 
-class AlbumNode: public TSNode	//--------------------------------------------
+class AlbumNode: public TSNode, public ThumbnailDrawer	//--------------------------------------------
 {
 public:
 	AlbumNode(TreeNode* parent)			
@@ -339,12 +362,18 @@ public:
 		ASSERT(rec.get() != NULL && rec->IsValid());
 		m_rec = rec;
 	}
+
+	virtual BOOL DrawThumbnail(Gdiplus::Graphics& g, Gdiplus::Rect& rc)	 const
+	{
+		return PRGAPI()->GetLocalPictureManager()->DrawAlbumThumbnail(m_rec->artist.name.c_str(), m_rec->album.name.c_str(), g, rc);
+	}
+
 	virtual void Draw(Gdiplus::Graphics& g, CFlexTreeCtrl::DrawNodeInfo& nfo, CMainTreeCtrl::GDIRes& res) const
 	{
 		PrgAPI* pAPI = PRGAPI();
 		if (m_rec.get() == NULL)
 		{
-			res.pDrawer->Draw(g, nfo, res, IIT_AlbumPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable);
+			res.pDrawer->Draw(g, nfo, res, IIT_AlbumPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable, this);
 			return;
 		}
 		//===Translate [Unknown]
@@ -385,7 +414,7 @@ public:
 				secondPart = bf;
 			}
 		}
-		res.pDrawer->Draw(g, nfo, res, IIT_AlbumPicture, m_rec->album.ID, firstPart, secondPart, m_rec->album.rating, bExpandable);
+		res.pDrawer->Draw(g, nfo, res, IIT_AlbumPicture, m_rec->album.ID, firstPart, secondPart, m_rec->album.rating, bExpandable, this);
 	}
 	const FullAlbumRecordSP& GetFullAlbumRecord() const	{return m_rec;}
 private:
@@ -453,7 +482,7 @@ public:
 		PrgAPI* pAPI = PRGAPI();
 		if (m_rec.get() == NULL)
 		{
-			res.pDrawer->Draw(g, nfo, res, IIT_GenrePicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable);
+			res.pDrawer->Draw(g, nfo, res, IIT_GenrePicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable, NULL);
 			return;
 		}
 		LPCTSTR firstPart = m_rec->name.c_str();
@@ -474,7 +503,7 @@ public:
 			else
 				ASSERT(0);
 		}
-		res.pDrawer->Draw(g, nfo, res, IIT_GenrePicture, m_rec->ID, firstPart, secondPart, 0, bExpandable);
+		res.pDrawer->Draw(g, nfo, res, IIT_GenrePicture, m_rec->ID, firstPart, secondPart, 0, bExpandable, NULL);
 	}
 	void SetGenreRecord(GenreRecordSP& rec)
 	{
@@ -525,7 +554,7 @@ public:
 		PrgAPI* pAPI = PRGAPI();
 		if (m_rec.get() == NULL)
 		{
-			res.pDrawer->Draw(g, nfo, res, IIT_CollectionPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable);
+			res.pDrawer->Draw(g, nfo, res, IIT_CollectionPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable, NULL);
 			return;
 		}
 		LPCTSTR firstPart = m_rec->name.c_str();
@@ -551,7 +580,7 @@ public:
 			else
 				ASSERT(0);
 		}
-		res.pDrawer->Draw(g, nfo, res, IIT_CollectionPicture, m_rec->ID, firstPart, secondPart, 0, bExpandable);
+		res.pDrawer->Draw(g, nfo, res, IIT_CollectionPicture, m_rec->ID, firstPart, secondPart, 0, bExpandable, NULL);
 	}
 	void SetCollectionRecord(CollectionRecordSP& rec)
 	{
@@ -600,7 +629,7 @@ public:
 		PrgAPI* pAPI = PRGAPI();
 		if (m_rec.get() == NULL)
 		{
-			res.pDrawer->Draw(g, nfo, res, IIT_YearPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable);
+			res.pDrawer->Draw(g, nfo, res, IIT_YearPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable, NULL);
 			return;
 		}
 		TCHAR firstPart[100];
@@ -620,7 +649,7 @@ public:
 			else
 				ASSERT(0);
 		}
-		res.pDrawer->Draw(g, nfo, res, IIT_YearPicture, m_rec->year, firstPart, secondPart, 0, bExpandable);
+		res.pDrawer->Draw(g, nfo, res, IIT_YearPicture, m_rec->year, firstPart, secondPart, 0, bExpandable, NULL);
 	}
 	void SetYearRecord(YearRecordSP& rec)
 	{
@@ -678,7 +707,7 @@ public:
 		PrgAPI* pAPI = PRGAPI();
 		if (m_rec.get() == NULL)
 		{
-			res.pDrawer->Draw(g, nfo, res, IIT_MonthPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable);
+			res.pDrawer->Draw(g, nfo, res, IIT_MonthPicture, 0, pAPI->GetString(IDS_VARIOUS), NULL, 0, bExpandable, NULL);
 			return;
 		}
 		Bitmap* bmp = NULL;
@@ -703,7 +732,7 @@ public:
 			else
 				ASSERT(0);
 		}
-		res.pDrawer->Draw(g, nfo, res, IIT_MonthPicture, m_rec->month, firstPart, secondPart, 0, bExpandable);
+		res.pDrawer->Draw(g, nfo, res, IIT_MonthPicture, m_rec->month, firstPart, secondPart, 0, bExpandable, NULL);
 	}
 	void SetMonthAddedRecord(MonthAddedRecordSP& rec)
 	{
@@ -791,18 +820,6 @@ m_updatesPerformed(0)
 	m_gdiRes.pDrawer->hStarIcon = pAPI->GetIcon(ICO_StarGold16);
 	m_gdiRes.pDrawer->hAntiStarIcon = pAPI->GetIcon(ICO_StarBad16);
 
-	//m_gdiRes.pBitmap = NULL;
-
-	//m_gdiRes.pBitmap = new CGdiPPicDrawer;
-	//m_gdiRes.pBitmap->LoadResourceID(IDR_PNG_ARTIST, _T("png"));
-	//m_gdiRes.pBitmap->SetBkColor(RGB(0,0,0), 0);
-	////m_gdiRes.m_pArtistBitmap->LoadResourceID(IDR_ARTIST, _T("jpg"));
-	//m_gdiRes.m_pArtistBitmap->GetDrawParams().zoomLockMode = CGdiPPicDrawer::ZLM_FillArea;
-	//m_gdiRes.m_pArtistBitmap->GetDrawParams().positionY = 0;
-
-	//m_gdiRes.m_pAlbumBitmap = new CGdiPPicDrawer;
-	//m_gdiRes.m_pAlbumBitmap->LoadResourceID(IDR_ALBUM, _T("jpg"));
-	//m_gdiRes.m_pAlbumBitmap->GetDrawParams().zoomLockMode = CGdiPPicDrawer::ZLM_FillArea;
 
 	m_gdiRes.bShowImages = TRUE;
 	m_gdiRes.bFullInformation = TRUE;
@@ -1740,16 +1757,18 @@ BOOL CMainTreeCtrl::GetSelectedMonthAddedRecordSP(MonthAddedRecordSP& rec)
 void CMainTreeCtrl::OnSelectionChanged()
 {
 	UINT curTick = GetTickCount();
+	KillTimer(REFRESH_DELAY_TIMER_ID);
 	if (curTick - m_lastNotification > 1000)
 	{
-		ModifyState();
+		SetTimer(REFRESH_DELAY_TIMER_ID, 100, NULL);
+		//ModifyState();
 	}
 	else
 	{
-		KillTimer(REFRESH_DELAY_TIMER_ID);
-		SetTimer(REFRESH_DELAY_TIMER_ID, 
-			m_notificationDelay / (curTick - m_lastNotification < m_notificationDelay ? 1 : 10), 
-			NULL);
+		SetTimer(REFRESH_DELAY_TIMER_ID, 300, NULL);
+		//SetTimer(REFRESH_DELAY_TIMER_ID, 
+		//	m_notificationDelay / (curTick - m_lastNotification < m_notificationDelay ? 1 : 10), 
+		//	NULL);
 	}
 	m_lastNotification = curTick;
 }

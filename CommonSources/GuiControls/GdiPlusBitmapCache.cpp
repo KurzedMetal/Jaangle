@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -71,7 +71,7 @@ BOOL GdiPlusBitmapCache::LoadState(LPCTSTR stateFile)
 }
 BOOL GdiPlusBitmapCache::SaveState(LPCTSTR stateFile)
 {
-	if (m_picDrawer.SaveFile(stateFile))
+	if (m_picDrawer.SaveFile(stateFile, GdiPlusPicDrawer::IF_png))
 	{
 		TCHAR bf[MAX_PATH];
 		_sntprintf(bf, MAX_PATH, _T("%s.id"), stateFile);

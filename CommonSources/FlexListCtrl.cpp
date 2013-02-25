@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -216,15 +216,16 @@ void CFlexListCtrl::OnPaint()
 	}
 	if (m_bWindowInvalidated)
 	{
-		if (m_itemCount > 0)
+		INT nItemCount = GetItemCount();
+		if (nItemCount > 0)
 		{
 			std::set<UINT>::iterator it = m_invalidatedItemsSet.begin();
 			for (; it!=m_invalidatedItemsSet.end(); it++)
 			{
-				if (*it < m_itemCount && IsItemVisible(*it, FALSE))
+				if ((INT)(*it)< nItemCount && IsItemVisible(*it, FALSE))
 					DrawItem(dblg, *it, GetItemRect(*it));
 			}
-			Rect lastItemRC = GetItemRect(m_itemCount - 1);
+			Rect lastItemRC = GetItemRect(nItemCount - 1);
 			INT freeSpaceY = lastItemRC.Y + lastItemRC.Height;
 			if (freeSpaceY < rc.GetBottom())
 				DrawBackground(dblg, Rect(rc.X, freeSpaceY, rc.Width, rc.Height - freeSpaceY + 1));

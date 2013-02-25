@@ -72,7 +72,7 @@ BOOL QuickSearchDlg::Create(CWnd* pParent)
 	if (CreateEx(WS_EX_OVERLAPPEDWINDOW, 
 		_T("#32770"), 
 		pAPI->GetString(IDS_SEARCH), 
-		WS_POPUP | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME, 
+		WS_MAXIMIZEBOX | WS_POPUP | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME, 
 		0, 0, 450, 220, 
 		hParent, 0, 0))
 	{
@@ -103,6 +103,9 @@ BOOL QuickSearchDlg::Create(CWnd* pParent)
 		m_trackList.SetFullTrackRecordCollection(&m_tracks);
 		SetTimer(TIMER_AUTOHIDE, 3500, 0);
 		m_searchEdit.SetFocus();
+
+		SetIcon(PRGAPI()->GetIcon(ICO_Find16), FALSE);
+
 
 		return TRUE;
 	}
@@ -173,6 +176,7 @@ void QuickSearchDlg::ApplySkin(ISkin& _skin)
 
 	SetTitleHeight(24 + skin.GetRelativeFontSize());
 	m_trackList.ApplySkin(skin);
+
 
 	//INT editHeight = skin.GetIntParameter(CSEC_TrackListTitle, IPARAM_EditHeight) + skin.GetRelativeFontSize();
 

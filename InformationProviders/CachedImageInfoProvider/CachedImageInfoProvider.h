@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -66,10 +66,15 @@ public:
 
 
 	void SetStoragePath(LPCTSTR storagePath);
+	LPCTSTR GetStoragePath()							{return m_storagePath.c_str();}
+	void SetThumbnailMode(BOOL bThumbnailMode)			{m_bThumbnailMode = bThumbnailMode;}
+	BOOL IsInThumbnailMode()							{return m_bThumbnailMode;}
+	void SetThumbnailSize(INT cx, INT cy)				{m_cxThumbnail = cx; m_cyThumbnail = cy;}
 
 
 private:
 	std::basic_string<TCHAR> m_storagePath;
+	std::basic_string<TCHAR> m_tempPath;
 	std::basic_string<TCHAR> m_Artist;
 	std::basic_string<TCHAR> m_Album;
 	//std::basic_string<TCHAR> m_result;
@@ -87,6 +92,10 @@ private:
 
 	void ConvertV2ArtistPictures();
 	void ConvertV2AlbumPictures();
+
+	BOOL m_bThumbnailMode;
+	INT m_cxThumbnail;
+	INT m_cyThumbnail;
 
 };
 

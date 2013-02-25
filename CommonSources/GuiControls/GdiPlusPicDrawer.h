@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -29,6 +29,15 @@ using namespace Gdiplus;
 
 class GdiPlusPicDrawer
 {
+public: 
+	enum ImageFormatEnum
+	{
+		IF_First,
+		IF_jpg,
+		IF_png,
+		IF_Last
+	};
+
 public:
 	GdiPlusPicDrawer();
 	~GdiPlusPicDrawer();
@@ -39,7 +48,8 @@ public:
 	BOOL LoadResourceStr(LPCTSTR resName, LPCTSTR resType, HMODULE hInst = NULL);
 	BOOL LoadResourceID(UINT resID, LPCTSTR resType, HMODULE hInst = NULL);
 
-	BOOL SaveFile(LPCTSTR imgFile);
+	BOOL SaveFile(LPCTSTR imgFile, ImageFormatEnum imageFormat);
+	BOOL SaveThumbnail(LPCTSTR imgFile, INT cx, INT cy, ImageFormatEnum imageFormat);
 
 	enum DrawMode
 	{
@@ -81,7 +91,7 @@ public:
 	void Destroy();
 
 	BOOL Draw(HDC hdc, CRect& trgRC, CRect* pSrcRC = NULL);
-	BOOL Draw(Graphics& g, Rect& trgRC, Rect* pSrcRC = NULL);
+	BOOL Draw(Graphics& g, Rect& trgRC, Rect* pSrcRC = NULL, OUT Rect* pActualImageRC = NULL);
 
 	BOOL HasImage()						{return m_pImage != NULL;}
 	DOUBLE GetZoomForLockMode(Rect& trgRC, ZoomLockMode zlm);
@@ -91,6 +101,9 @@ public:
 
 	static INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 private:
+	BOOL SaveFilePrivate(Image* pImage, LPCTSTR imgFile, ImageFormatEnum imageFormat);
+
+
 	BOOL CreateImageFromHGlobal(HGLOBAL hBuffer);
 	GdiPlusInstance inst;
 	Bitmap* m_pImage;

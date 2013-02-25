@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -271,7 +271,7 @@ BOOL GoogleLyricsProvider::GetNextResult(Result& result)
 			LPCSTR startPos = page.c_str(); 
 			while (startPos != NULL)
 			{
-				startPos = strstr(startPos, " class=g>");
+				startPos = strstr(startPos, "h3 class=\"r\">");
 				if (startPos)
 				{
 					startPos = strstr(startPos, "http:");
@@ -437,6 +437,8 @@ LPCSTR const BlacListedSitesLyrics[] =
 	"lyricsdir.com",	//This shows disclaimer  (RadioHead - No Surprises)
 	"songlyrics.com",	//Needs to press button  (Linkin Park - From the inside)
 	"actionext.com",	//Usually asks to add the lyrics yourself
+	"mylyricscentral.com",	//There is a big text at the beginning.
+	"lyricsfreak.com",
 	NULL
 };
 LPCSTR const BlacListedSitesTabs[] =

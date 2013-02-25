@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -25,6 +25,7 @@
 #include "cStringUtils.h"
 #include "shlwapi.h"
 #include "cMD5.h"
+#include "GuiControls/GdiPlusPicDrawer.h"
 
 #ifdef _UNITTESTING
 LPCTSTR tempDir = _T("D:\\temp");
@@ -107,7 +108,10 @@ BOOL CachedImageInfoProvider::UnitTest()
 
 CachedImageInfoProvider::CachedImageInfoProvider():
 m_request(SRV_First),
-m_curResult(-1)
+m_curResult(-1),
+m_bThumbnailMode(FALSE),
+m_cxThumbnail(32),
+m_cyThumbnail(32)
 {
 
 }
@@ -286,6 +290,32 @@ void CachedImageInfoProvider::ConvertV2AlbumPictures()
 
 BOOL CachedImageInfoProvider::GetNextResult(Result& result)
 {
+	if (m_bThumbnailMode)
+	{
+		TCHAR path[MAX_PATH];
+		TCHAR hash[500];
+
+		switch (m_request.service)
+		{
+		case SRV_ArtistImage:
+			GetArtistHash(hash, 500);
+			_sntprintf(path, MAX_PATH, _T("%sAR_%s_%02dx%02d.png"), m_storagePath.c_str(), hash, m_cxThumbnail, m_cyThumbnail);
+			break;
+		case SRV_AlbumImage:
+			GetAlbumHash(hash, 500);
+			_sntprintf(path, MAX_PATH,_T("%sAL_%s_%02dx%02d.png"), m_storagePath.c_str(), hash, m_cxThumbnail, m_cyThumbnail);
+			break;
+		}
+		if (PathFileExists(path))
+		{
+			m_tempPath = path;
+			result.main = m_tempPath.c_str();
+			result.additionalInfo = m_storagePath.c_str();
+			result.service = m_request.service;
+			return TRUE;
+		}
+		return FALSE;
+	}
 	if (m_curResult == -1)
 	{
 		m_results.clear();
@@ -294,8 +324,8 @@ BOOL CachedImageInfoProvider::GetNextResult(Result& result)
 		switch (m_request.service)
 		{
 		case SRV_ArtistImage:
-			ConvertV2ArtistPictures();
 			GetArtistHash(hash, 500);
+			ConvertV2ArtistPictures();
 			_sntprintf(path, MAX_PATH, _T("%sAR_%s??.*"), m_storagePath.c_str(), hash);
 			GetFiles(path, m_results);
 			break;
@@ -336,6 +366,18 @@ BOOL CachedImageInfoProvider::AddResult(const Result& result)
 	case SRV_ArtistImage:
 		{
 			GetArtistHash(hash, 500);
+			if (m_bThumbnailMode)
+			{
+				_sntprintf(path, MAX_PATH,_T("%sAR_%s_%02dx%02d.png"), m_storagePath.c_str(), hash, m_cxThumbnail, m_cyThumbnail);
+				GdiPlusPicDrawer pic;
+				if (pic.LoadFile(result.main))
+				{
+					pic.GetDrawParams().zoomLockMode = GdiPlusPicDrawer::ZLM_FillArea;
+					pic.GetDrawParams().bTransparent = TRUE;
+					return pic.SaveThumbnail(path, m_cxThumbnail, m_cyThumbnail, GdiPlusPicDrawer::IF_png);
+				}
+				return FALSE;
+			}
 			_sntprintf(path, MAX_PATH,_T("%sAR_%s"), m_storagePath.c_str(), hash);
 			return SaveFile(path, _T("jpg"), result.main);
 		}
@@ -343,6 +385,18 @@ BOOL CachedImageInfoProvider::AddResult(const Result& result)
 	case SRV_AlbumImage:
 		{
 			GetAlbumHash(hash, 500);
+			if (m_bThumbnailMode)
+			{
+				_sntprintf(path, MAX_PATH,_T("%sAL_%s_%02dx%02d.png"), m_storagePath.c_str(), hash, m_cxThumbnail, m_cyThumbnail);
+				GdiPlusPicDrawer pic;
+				if (pic.LoadFile(result.main))
+				{
+					pic.GetDrawParams().zoomLockMode = GdiPlusPicDrawer::ZLM_FillArea;
+					pic.GetDrawParams().bTransparent = TRUE;
+					return pic.SaveThumbnail(path, m_cxThumbnail, m_cyThumbnail, GdiPlusPicDrawer::IF_png);
+				}
+				return FALSE;
+			}
 			_sntprintf(path, MAX_PATH,_T("%sAL_%s"), m_storagePath.c_str(), hash);
 			return SaveFile(path, _T("jpg"), result.main);
 		}

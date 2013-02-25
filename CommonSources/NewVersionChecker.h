@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -80,7 +80,7 @@ public:
 		std::tstring infoURL;
 	};
 	//CheckUpdates----------------
-	//URL2Chack: The URL page (HTML - php etc) that will be used for checking. 
+	//URL2Check: The URL page (HTML - php etc) that will be used for checking. 
 	//	The returned page must be in a certain XML format
 	//asyncHWND:	HWND to send the MSG_MODULEUPDATER message (wParam=0). 
 	//				The window must query the GetCheckResult function to get the results

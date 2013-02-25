@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -55,7 +55,8 @@ BOOL ADODatabase::Open(LPCTSTR connection, LPCTSTR userID, LPCTSTR pass, UINT ti
 {
 	if (m_pConnection == NULL)
 	{
-		if (m_pConnection.CreateInstance(__uuidof(Connection)) != S_OK)
+		HRESULT hr = m_pConnection.CreateInstance(__uuidof(Connection));
+		if (FAILED(hr))
 		{
 			TRACE(_T("@1ADODatabase::Open(). CreateInstance Failed."));
 			return FALSE;
@@ -446,6 +447,9 @@ BOOL ADORecordset::Open(LPCTSTR lpstrExec,
 BOOL ADORecordset::Open(_ConnectionPtr mpdb, LPCTSTR lpstrExec, 
 						CursorTypeEnum CursorType, LockTypeEnum LockType, INT nOption)
 {	
+#ifdef _DEBUG
+	//TRACEST(_T("EXECUTE SQL"), lpstrExec);
+#endif
 	Close();
 	ASSERT(lpstrExec!=NULL);
 	ASSERT(lpstrExec[0] != 0);
@@ -454,9 +458,6 @@ BOOL ADORecordset::Open(_ConnectionPtr mpdb, LPCTSTR lpstrExec,
 	m_pRecordset->CursorLocation = adUseServer;
 	try
 	{
-#ifdef _DEBUG
-		TRACE(_T("@4 EXECUTE SQL:'%s'\r\n"), lpstrExec);
-#endif
 		m_pRecordset->Open(lpstrExec, _variant_t((IDispatch*)mpdb, TRUE), CursorType, LockType, nOption);
 	}
 	catch(_com_error &e)

@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -64,7 +64,7 @@
 #include "MiniPlayerDlg.h"
 #include "QuickSearchDlg.h"
 #include "SearchDlg.h"
-
+#include "AppSettings/IniAppSettings.h"
 
 //=== For 0.99 Version
 //#define USE_YOUTUBEENGINE
@@ -269,7 +269,7 @@ void PrgAPI::Shutdown()
 
 void PrgAPI::SaveSettings()
 {
-	TRACEST(_T("PrgAPI::SaveSettings."));
+	TRACEST(_T("PrgAPI::SaveSettings"));
 	AppSettings* pAppSettings = GetAppSettings();
 
 	TCHAR monitor[500];
@@ -309,8 +309,6 @@ void PrgAPI::SaveSettings()
 		pAppSettings->Write(cLastFM, cOptionUser, m_pLastFMServices->GetUserName());
 		pAppSettings->Write(cLastFM, cOptionPass, m_pLastFMServices->GetMD5Password());
 	}
-	if (m_pLocalPictureManager)
-		m_pLocalPictureManager->SaveState(GetPath(PATH_UserRoot));
 	WriteOptions();
 	pAppSettings->Save();
 }
@@ -364,6 +362,8 @@ m_pAppMonitor(NULL)
 {
 	memset(m_pAppFonts, 0, sizeof(m_pAppFonts));
 	memset(m_AppIcons, 0, sizeof(m_AppIcons));
+	m_userRootPath[0] = 0;
+	m_commonRootPath[0] = 0;
 }
 
 PrgAPI::~PrgAPI()
@@ -537,7 +537,7 @@ BOOL PrgAPI::Init()
 	//===Check for Crash
 	LPCTSTR files[] = CRASHREPORT_FILES;
 	TCHAR crashLogPath[MAX_PATH];
-	_sntprintf(crashLogPath, MAX_PATH, _T("%s%s"), GetPath(PATH_AppRoot), files[0]);
+	GetPath(PATH_CrashLogFile, crashLogPath);
 	BOOL bCrashLogExists = FALSE;
 	if (_taccess(crashLogPath, 0) == 0)
 	{
@@ -580,9 +580,8 @@ BOOL PrgAPI::Init()
 	if (GetOption(OPT_GEN_Debugging) == 1)
 	{
 		TCHAR debugLogPath[MAX_PATH];
-		_sntprintf(debugLogPath, MAX_PATH, _T("%sdebug.log"), GetPath(PATH_AppRoot));
 		ALog* pLog = ALog::Inst();
-		pLog->AddViewer(new PrunnedFileViewer(debugLogPath, 15));
+		pLog->AddViewer(new PrunnedFileViewer(GetPath(PATH_LoggingFile, debugLogPath), 15));
 		pLog->SetOption(ALog::LO_MaxAllowedDepth, 5);
 		pLog->SetOption(ALog::LO_DefaultDepth, 3);
 		pLog->SetOption(ALog::LO_ShowDepth, 1);
@@ -638,13 +637,72 @@ BOOL PrgAPI::Init()
 	return TRUE;
 }
 
+void PrgAPI::TryToTransferOldSettingsIfAvailable()
+{
+	//Copy Jaangle.ini -> Settings.ini
+	TCHAR legacyPath[MAX_PATH];
+	TCHAR newPath[MAX_PATH];
+	GetPath(PATH_ExeRoot, legacyPath);
+	_tcscat(legacyPath, _T("Jaangle.ini"));
+	GetPath(PATH_SettingsFile, newPath);
+	if (!CopyFile(legacyPath, newPath, FALSE))
+		return;
+	MessageBox(NULL, _T("Jaangle will try to transfer old settings. Press OK to continue."), _T("Upgrading"), 0);
+	//Copy LastTracks.m3u
+	GetPath(PATH_ExeRoot, legacyPath);
+	_tcscat(legacyPath, _T("User\\LastTracks.m3u"));
+	GetPath(PATH_LastTracksFile, newPath);
+	CopyFile(legacyPath, newPath, FALSE);
+
+	//Copy Music.mdb
+	GetPathLegacy(PATHLEGACY_DatabaseRoot, legacyPath);
+	_tcscat(legacyPath, _T("music.mdb"));
+	GetPath(PATH_DatabaseRoot, newPath);
+	_tcscat(newPath, _T("music.mdb"));
+	CopyFile(legacyPath, newPath, FALSE);
+
+	//Copy Images
+
+	INT len = sizeof(legacyPath);
+	memset(legacyPath, 0, sizeof(legacyPath));
+	memset(newPath, 0, sizeof(newPath));
+	GetPathLegacy(PATHLEGACY_StorageRoot, legacyPath);
+	_tcscat(legacyPath, _T("*.*"));
+	GetPath(PATH_ImagesRoot, newPath);
+
+
+	SHFILEOPSTRUCT sfos;
+	sfos.hwnd = NULL;
+	sfos.wFunc = FO_COPY;
+	sfos.pFrom = legacyPath;
+	sfos.pTo = newPath;
+	//sfos.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT | FOF_NO_UI | FOF_NOCONFIRMMKDIR;
+	sfos.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NOCONFIRMMKDIR;
+	sfos.fAnyOperationsAborted = NULL;
+	sfos.hNameMappings = NULL;
+	sfos.lpszProgressTitle = _T("Jaange - Copying images");
+	SHFileOperation(&sfos);
+
+	MessageBox(NULL, _T("Jaangle transfered all settings. Press OK to continue."), _T("Success"), 0);
+	
+
+	//MoveImages
+	
+}
+
 //to BE removed
 AppSettings* PrgAPI::GetAppSettings()
 {
 	if (m_pAppSettings == NULL)
 	{
 		TRACEST(_T("PrgAPI::GetAppSettings [CREATE]"));
-		m_pAppSettings = ObjFactory::Instance()->CreateAppSettings();
+		m_pAppSettings = new IniAppSettings();
+		TCHAR settingsPath[MAX_PATH];
+		if (!PathFileExists(GetPath(PATH_SettingsFile, settingsPath)))
+		{
+			TryToTransferOldSettingsIfAvailable();
+		}
+		m_pAppSettings->Load(settingsPath);
 	}
 	return m_pAppSettings;
 }
@@ -1043,8 +1101,7 @@ void PrgAPI::WriteOptions()
 	if (m_pMediaPlayer != NULL)//GetOption will fail to return Real Player Options
 	{
 		TCHAR playListFileName[MAX_PATH];
-		GetPath(PATH_LastM3UFile, playListFileName);
-		DeleteFile(playListFileName);
+		DeleteFile(GetPath(PATH_LastTracksFile, playListFileName));
 		MediaPlayerUtilities::SaveM3U(*m_pMediaPlayer, playListFileName);
 		INT ACMode = 0;
 		SetOption(OPT_PL_PlayMode, m_pMediaPlayer->GetNextMode(&ACMode));//OPT_PL_PlayMode,
@@ -1223,7 +1280,8 @@ MediaPlayer* PrgAPI::GetMediaPlayer()
 		if (m_pMediaPlayer->GetPlayListCount() == 0)
 		{
 			bLoadOldPlaylist = TRUE;
-			MediaPlayerUtilities::InsertM3U(*m_pMediaPlayer, GetPath(PATH_LastM3UFile));
+			TCHAR ltPath[MAX_PATH];
+			MediaPlayerUtilities::InsertM3U(*m_pMediaPlayer, GetPath(PATH_LastTracksFile, ltPath));
 		}
 		if (bLoadOldPlaylist)
 		{
@@ -1257,8 +1315,9 @@ LocalPictureManager* PrgAPI::GetLocalPictureManager()
 	{
 		TRACEST(_T("PrgAPI::GetLocalPictureManager [CREATION]"));
 		m_pLocalPictureManager = new LocalPictureManager;
-		m_pLocalPictureManager->Init(GetPath(PATH_StorageRoot));
-		m_pLocalPictureManager->LoadState(GetPath(PATH_UserRoot));
+		TCHAR imagesPath[MAX_PATH];
+		m_pLocalPictureManager->Init(GetPath(PATH_ImagesRoot, imagesPath));
+		//m_pLocalPictureManager->LoadState(GetPath(PATH_UserRoot));
 		m_pLocalPictureManager->EnableFolderImages(GetOption(OPT_IM_UseFolderImages) != 0);
 	}
 	return m_pLocalPictureManager;
@@ -1339,8 +1398,8 @@ ServicesRegistrationSrv* PrgAPI::GetServicesRegistrationSrv()
 	{
 		TRACEST(_T("PrgAPI::GetServicesRegistrationSrv"));
 		m_pServicesRegistrationSrv = new ServicesRegistrationSrv;
-		std::tstring appPath;
-		m_pServicesRegistrationSrv->LoadServices(GetPath(PATH_WebServicesRoot));
+		TCHAR path[MAX_PATH];
+		m_pServicesRegistrationSrv->LoadServices(GetPath(PATH_WebServicesRoot, path));
 	}
 	return m_pServicesRegistrationSrv;
 }
@@ -1647,7 +1706,8 @@ SkinManager* PrgAPI::GetSkinManager()
 	{
 		TRACEST(_T("PrgAPI::GetSkinManager [CREATION]"));
 		m_pSkinManager = new SkinManager;
-		m_pSkinManager->SetSkinsFolder(GetPath(PATH_SkinRoot));
+		TCHAR path[MAX_PATH];
+		m_pSkinManager->SetSkinsFolder(GetPath(PATH_SkinsRoot, path));
 		std::tstring SkinName;
 		GetAppSettings()->Read(cGeneral, cOptionSkin, SkinName, _T(""));
 		if (!SkinName.empty())
@@ -1665,58 +1725,43 @@ SkinManager* PrgAPI::GetSkinManager()
 	return m_pSkinManager;
 }
 
-LPCTSTR PrgAPI::GetPath(PathsEnum pathType, LPTSTR buffer/* = NULL*/)
+LPCTSTR PrgAPI::GetPathLegacy(PathsLegacyEnum pathType, LPTSTR buffer)
 {
-	if (buffer == NULL)
-		buffer = m_tempPath;
+	//=== LEGACY =============================================================================
 	switch (pathType)
 	{
-	case PATH_AppRoot:
-		{
-			::GetModuleFileName(0, buffer, MAX_PATH);
-			LPTSTR pszFileName = _tcsrchr(buffer, '\\');
-			pszFileName[1] = 0;
-		}
-		break;
-	case PATH_SkinRoot:
+	case PATHLEGACY_SkinRoot:
 		{
 			TCHAR appRoot[MAX_PATH];
-			_sntprintf(buffer, MAX_PATH, _T("%sSkins\\"), GetPath(PATH_AppRoot, appRoot));
-			if (!PathFileExists(buffer))
-				CreateDirectory(buffer, NULL);
+			_sntprintf(buffer, MAX_PATH, _T("%sSkins\\"), GetPath(PATH_ExeRoot, appRoot));
 		}
 		break;
-	case PATH_TranslationsRoot:
+	case PATHLEGACY_TranslationsRoot:
 		{
 			TCHAR appRoot[MAX_PATH];
-			_sntprintf(buffer, MAX_PATH, _T("%sLangs\\"), GetPath(PATH_AppRoot, appRoot));
-			if (!PathFileExists(buffer))
-				CreateDirectory(buffer, NULL);
+			_sntprintf(buffer, MAX_PATH, _T("%sLangs\\"), GetPath(PATH_ExeRoot, appRoot));
+			//if (!PathFileExists(buffer))
+			//	CreateDirectory(buffer, NULL);
 		}
 		break;
-	case PATH_WebServicesRoot:
+	case PATHLEGACY_WebServicesRoot:
 		TCHAR appRoot[MAX_PATH];
-		_sntprintf(buffer, MAX_PATH, _T("%sWebServices\\"), GetPath(PATH_AppRoot, appRoot));
-		if (!PathFileExists(buffer))
-			CreateDirectory(buffer, NULL);
+		_sntprintf(buffer, MAX_PATH, _T("%sWebServices\\"), GetPath(PATH_ExeRoot, appRoot));
+		//if (!PathFileExists(buffer))
+		//	CreateDirectory(buffer, NULL);
 		break;
-	case PATH_StorageRoot:
-	case PATH_UserRoot:
-	case PATH_DatabaseRoot:
+	case PATHLEGACY_StorageRoot:
+	case PATHLEGACY_DatabaseRoot:
 		{
 			LPCTSTR iniEntry = NULL;
 			LPCTSTR defFolder = NULL;
 			switch (pathType)
 			{
-			case PATH_StorageRoot:
+			case PATHLEGACY_StorageRoot:
 				iniEntry = _T("StoragePath");
 				defFolder = _T("Storage\\");
 				break;
-			case PATH_UserRoot:
-				iniEntry = _T("UserPath");
-				defFolder = _T("User\\");
-				break;
-			case PATH_DatabaseRoot:
+			case PATHLEGACY_DatabaseRoot:
 				iniEntry = _T("DatabasePath");
 				defFolder = _T("");
 				break;
@@ -1744,33 +1789,185 @@ LPCTSTR PrgAPI::GetPath(PathsEnum pathType, LPTSTR buffer/* = NULL*/)
 			{
 				//=== Default Path
 				TCHAR appRoot[MAX_PATH];
-				_sntprintf(buffer, MAX_PATH, _T("%s%s"), GetPath(PATH_AppRoot, appRoot), defFolder);
-				if (!PathFileExists(buffer))
-					CreateDirectory(buffer, NULL);
+				_sntprintf(buffer, MAX_PATH, _T("%s%s"), GetPath(PATH_ExeRoot, appRoot), defFolder);
+				//if (!PathFileExists(buffer))
+				//	CreateDirectory(buffer, NULL);
 			}
 		}
 		break;
-	case PATH_LastM3UFile:
-		{
-			TCHAR userRoot[MAX_PATH];
-			_sntprintf(buffer, MAX_PATH, _T("%slasttracks.m3u"), GetPath(PATH_UserRoot, userRoot));
-		}
-		break;
-	case PATH_ServicesXMLFile:
-		{
-			TCHAR appRoot[MAX_PATH];
-			_sntprintf(buffer, MAX_PATH, _T("%sservices.xml"), GetPath(PATH_AppRoot, appRoot));
-		}
-		break;
-	case PATH_ServicesUserXMLFile:
-		{
-			TCHAR appRoot[MAX_PATH];
-			_sntprintf(buffer, MAX_PATH, _T("%sservices.xml"), GetPath(PATH_UserRoot, appRoot));
-		}
-		break;
 	default:
-		ASSERT(0);
 		return NULL;
+	}
+	return buffer;
+}
+
+TCHAR PrgAPI::m_userRootPath[MAX_PATH] = {0};
+TCHAR PrgAPI::m_commonRootPath[MAX_PATH] = {0};
+
+
+LPCTSTR PrgAPI::GetPath(PathsEnum pathType, LPTSTR buffer)
+{
+	ASSERT(buffer != NULL);
+	BOOL bCreateDirectoryIfDoesNotExist = FALSE;
+	switch (pathType)
+	{
+	case PATH_UserRoot:
+	case PATH_CommonRoot:
+		{
+			LPTSTR targetPath = (pathType == PATH_UserRoot ? m_userRootPath : m_commonRootPath);
+			//INT csidl = (pathType == PATH_UserRoot ? CSIDL_APPDATA : CSIDL_COMMON_APPDATA);
+			if (targetPath[0] == 0)
+			{
+				TCHAR bf[MAX_PATH];
+				GetPath(PATH_ExeRoot, bf);
+				_tcscat(bf, pathType == PATH_UserRoot ? _T("UserRootOverride.txt") : _T("CommonRootOverride.txt"));
+				HANDLE h = CreateFile(bf, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
+				if (h != INVALID_HANDLE_VALUE)
+				{
+					//=== Get the contents of the file
+					CHAR bfA[MAX_PATH];
+					DWORD br = 0;
+					ReadFile(h, bfA, MAX_PATH - 1, &br, 0);
+					CloseHandle(h);
+					LPSTR pos = strchr(bfA, '\r');
+					if (pos == NULL)
+						pos = strchr(bfA, '\n');
+					if (pos != NULL)
+						*pos = 0;
+					else
+						bfA[br] = 0;
+					MultiByteToWideChar(CP_ACP, 0, bfA, -1, targetPath, MAX_PATH);
+					//=== Check if it is a relative path
+					if (targetPath[1] == '\\' && targetPath[0] != '.')
+					{
+						//=== Net path - Do nothing
+					}
+					else if (targetPath[1] == ':')
+					{
+						//=== Normal path - Do nothing
+					}
+					else
+					{
+						//=== Relative path (useful for mem stick operations) - Add the ExePath in front
+						GetPath(PATH_ExeRoot, bf);
+						_tcscat(bf, targetPath[0] == '\\' ? &targetPath[1] : targetPath);
+						_tcsncpy(targetPath, bf, MAX_PATH);
+					}
+
+					INT len = _tcslen(targetPath);
+					if (targetPath[len - 1] != '\\')
+						_tcscat(targetPath, _T("\\"));
+					bCreateDirectoryIfDoesNotExist = TRUE;
+				}
+				if (targetPath[0] == 0)
+				{
+					bCreateDirectoryIfDoesNotExist = TRUE;
+					if (pathType == PATH_UserRoot)
+					{
+						HRESULT hr = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, bf);
+						_sntprintf(targetPath, MAX_PATH, _T("%s\\%s\\"), bf, CTeenSpiritApp::sAppTitle);
+					}
+					else
+					{
+						GetPath(PATH_ExeRoot, targetPath);
+						//_sntprintf(targetPath, MAX_PATH, _T("%s\\%s\\"), bf, CTeenSpiritApp::sAppTitle);
+					}
+				}
+			}
+			_tcsncpy(buffer, targetPath, MAX_PATH);
+		}
+		break;
+	case PATH_LastTracksFile:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sLastTracks.m3u"), GetPath(PATH_UserRoot, bf));
+		}
+		break;
+	case PATH_SettingsFile:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sSettings.ini"), GetPath(PATH_UserRoot, bf));
+		}
+		break;
+	case PATH_LoggingFile:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sDebug.log"), GetPath(PATH_UserRoot, bf));
+		}
+		break;
+
+	case PATH_CrashLogFile:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sCrash.log"), GetPath(PATH_UserRoot, bf));
+		}
+		break;
+	case PATH_SkinsRoot:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sSkins\\"), GetPath(PATH_CommonRoot, bf));
+		}
+		break;
+	case PATH_TranslationsRoot:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sTranslations\\"), GetPath(PATH_CommonRoot, bf));
+		}
+		break;
+	case PATH_TranslationsReferenceFile:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sTranslation.ref"), GetPath(PATH_TranslationsRoot, bf));
+		}
+		break;
+	case PATH_TranslationsReferenceFileUser:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sTranslation.ref"), GetPath(PATH_UserRoot, bf));
+		}
+		break;
+	case PATH_WebServicesRoot:
+		{
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sWebServices\\"), GetPath(PATH_CommonRoot, bf));
+		}
+		break;
+	case PATH_TempRoot:
+		GetTempPath(MAX_PATH, buffer);
+		break;
+	case PATH_StorageRoot:
+		{
+			bCreateDirectoryIfDoesNotExist = TRUE;
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sStorage\\"), GetPath(PATH_UserRoot, bf));
+		}
+		break;
+	case PATH_DatabaseRoot:
+		{
+			bCreateDirectoryIfDoesNotExist = TRUE;
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sDatabase\\"), GetPath(PATH_StorageRoot, bf));
+		}
+		break;
+	case PATH_ImagesRoot:
+		{
+			bCreateDirectoryIfDoesNotExist = TRUE;
+			TCHAR bf[MAX_PATH];
+			_sntprintf(buffer, MAX_PATH, _T("%sImages\\"), GetPath(PATH_StorageRoot, bf));
+		}
+		break;
+	case PATH_ExeRoot:
+		{
+			::GetModuleFileName(0, buffer, MAX_PATH);
+			LPTSTR pszFileName = _tcsrchr(buffer, '\\');
+			pszFileName[1] = 0;
+		}
+		break;
+	}
+	if (bCreateDirectoryIfDoesNotExist)
+	{
+		if (!PathFileExists(buffer))
+			SHCreateDirectoryEx(NULL, buffer, NULL);
 	}
 	return buffer;
 }
@@ -1938,7 +2135,8 @@ TranslationManager* PrgAPI::GetTranslationManager()
 	{
 		TRACEST(_T("PrgAPI::GetTranslationManager [CREATION]"));
 		m_pTranslationManager = new TranslationManager();
-		m_pTranslationManager->SetTranslationsFolder(GetPath(PATH_TranslationsRoot));
+		TCHAR path[MAX_PATH];
+		m_pTranslationManager->SetTranslationsFolder(GetPath(PATH_TranslationsRoot, path));
 	}
 	return m_pTranslationManager;
 }
@@ -2107,17 +2305,17 @@ SQLManager* PrgAPI::GetSQLManager()
 	{
 		TRACEST(_T("PrgAPI::GetSQLManager [CREATION]"));
 		m_pSQLManager = new SQLManager;
-		std::tstring path(GetPath(PATH_DatabaseRoot));
-		path += _T("music.mdb");
-		if (!m_pSQLManager->Init(path.c_str()))
+
+		TCHAR path[MAX_PATH];
+		GetPath(PATH_DatabaseRoot, path);
+		_tcscat(path, _T("music.mdb"));
+		if (!m_pSQLManager->Init(path))
 		{
 			delete m_pSQLManager;
 			m_pSQLManager = 0;
 			TRACE(_T("@0{Database Engine Failed to be created}\n"));
 		}
-
 	}
-
 	return m_pSQLManager;
 }
 

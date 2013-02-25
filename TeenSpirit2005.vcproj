@@ -1278,6 +1278,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CommonSources\CRC32.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CommonSources\CRC32.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CommonSources\cStringUtils.cpp"
 				>
 			</File>
@@ -1609,6 +1617,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CommonSources\UINTtoStringMapping.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CommonSources\UINTtoStringMapping.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CommonSources\URLEncDecHelper.cpp"
 				>
 			</File>
@@ -1854,6 +1870,14 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\CommonSources\PerfTimer.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\CommonSources\PerfTimer.h"
+					>
 				</File>
 			</Filter>
 			<Filter
@@ -5206,10 +5230,6 @@
 					>
 				</File>
 				<File
-					RelativePath="C:\audiocd.jpg"
-					>
-				</File>
-				<File
 					RelativePath=".\res\audiocd16.ico"
 					>
 				</File>
@@ -5307,10 +5327,6 @@
 				</File>
 				<File
 					RelativePath=".\res\Error.ico"
-					>
-				</File>
-				<File
-					RelativePath="C:\Documents and Settings\Alex\My Documents\Axialis Librarian\TeenSpirit\Error.ico"
 					>
 				</File>
 				<File
@@ -5691,10 +5707,6 @@
 				</File>
 				<File
 					RelativePath=".\res\treeDisc2.ico"
-					>
-				</File>
-				<File
-					RelativePath="C:\Documents and Settings\Alex\My Documents\Axialis Librarian\TeenSpirit\TreeView - 2Stars.ico"
 					>
 				</File>
 				<File

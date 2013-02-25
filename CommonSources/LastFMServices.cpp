@@ -342,13 +342,18 @@ BOOL LastFMServices::SubmitTracks(LPCTSTR sessionID, LPCTSTR submissionURL)
 			const LastFMSubmitTrack& track = *it;
 			//a[0]=<artist>
 			//The artist name. Required.
-			ConvertString(track.artist.c_str(), utf8bf, bfSize);
+			std::wstring fixedTrack;
+			URLEncode(fixedTrack, track.artist.c_str());
+			ConvertString(fixedTrack.c_str(), utf8bf, bfSize);
+
 			_snprintf(bf, bfSize, "a[%d]=%s&", i, utf8bf);
 			bf[bfSize - 1] = 0;
 			postData += bf;
 			//t[0]=<track>
 			//The track title. Required.
-			ConvertString(track.track.c_str(), utf8bf, bfSize);
+			URLEncode(fixedTrack, track.track.c_str());
+
+			ConvertString(fixedTrack.c_str(), utf8bf, bfSize);
 			_snprintf(bf, bfSize, "t[%d]=%s&", i, utf8bf);
 			bf[bfSize - 1] = 0;
 			postData += bf;

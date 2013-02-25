@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -39,8 +39,10 @@ public:
 public:
 	BOOL RequestArtistInfo(ArtistRecord& rec, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
 	BOOL RequestArtistPic(ArtistRecord& rec, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
+	BOOL RequestArtistPic(LPCTSTR artist, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
 	BOOL RequestAlbumInfo(AlbumRecord& rec, LPCTSTR artist, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
 	BOOL RequestAlbumPic(AlbumRecord& rec, LPCTSTR artist, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
+	BOOL RequestAlbumPic(LPCTSTR artist, LPCTSTR album, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
 	BOOL RequestLyrics(TrackRecord& rec, LPCTSTR artist, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
 	BOOL RequestTablatures(TrackRecord& rec, LPCTSTR artist, LPCTSTR providerName = NULL, BOOL bForce = FALSE, BOOL bSync = FALSE);
 

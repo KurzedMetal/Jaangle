@@ -1,4 +1,4 @@
-﻿//	/*
+//	/*
 // 	*
 // 	* Copyright (C) 2003-2010 Alexandros Economou
 //	*
@@ -24,11 +24,6 @@
 #include "ALog.h"
 #include <psapi.h>
 #pragma comment(lib, "Psapi.lib")
-
-
-#ifdef USE_CPUTICKER
-#include "cputicker.h"
-#endif
 
 
 #ifdef ALOG_ACTIVE
@@ -105,10 +100,7 @@ ALog* ALog::m_pLog = NULL;
 
 ALog::ALog():
 m_pViewer(NULL),
-m_pTicker(NULL),
 m_MainThreadID(NULL),
-m_StartupTicks(NULL),
-m_markedTime(0),
 m_markedMemSize(0)
 {
 	SetOption(LO_MaxAllowedDepth, 10);
@@ -135,9 +127,6 @@ ALog::~ALog()
 		delete m_pViewer;
 		m_pViewer = NULL;
 	}
-#ifdef USE_CPUTICKER
-	delete m_pTicker;
-#endif
 }
 
 void ALog::Shutdown()
@@ -155,7 +144,7 @@ ALog* ALog::Inst()
 	if (m_pLog == NULL)
 	{
 		m_pLog = new ALog;
-		m_pLog->m_StartupTicks = GetTickCount();
+		m_pLog->m_timer.Start(TRUE);
 		m_pLog->m_MainThreadID = ::GetCurrentThreadId();
 	}
 	return m_pLog;
@@ -306,8 +295,7 @@ AViewer* ALog::GetViewerByID(INT viewerID, LPCTSTR iniFilePath)
 
 BOOL ALog::LoadConfiguration(LPCTSTR path)
 {
-	HANDLE h = ::CreateFile(path,GENERIC_READ,FILE_SHARE_READ, 
-		NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+	HANDLE h = ::CreateFile(path, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
 	if (h == INVALID_HANDLE_VALUE)
 		return FALSE;
 	CloseHandle(h);
@@ -344,8 +332,8 @@ BOOL ALog::LoadConfiguration(LPCTSTR path)
 
 const TCHAR* const Depth[] = 
 {
-	_T("DBG"),	//@@
-	_T("SYS"),	//@D
+	_T("DBG"),	//@D
+	_T("SYS"),	//@@
 	_T("ERR"),	//@0
 	_T("WAR"),	//@1
 	_T("-L1"),	//@2
@@ -372,7 +360,7 @@ void ALog::Log(LPCTSTR description)
 	LPCTSTR pos = _tcschr(description, '%');
 	ASSERT(pos == NULL);
 #endif
-	LogUnsecure(description);
+	LogUnsafe(description);
 }
 void ALog::Log(LPCTSTR description, LPCTSTR s1)
 {
@@ -382,7 +370,7 @@ void ALog::Log(LPCTSTR description, LPCTSTR s1)
 	ASSERT(pos[1] == 's' || pos[2] == 's' || pos[3] == 's' || pos[4] == 's' || pos[5] == 's' || pos[6] == 's');
 	ASSERT(_tcschr(&pos[1], '%') == NULL);
 #endif
-	LogUnsecure(description, s1);
+	LogUnsafe(description, s1);
 }
 void ALog::Log(LPCTSTR description, INT i1)
 {
@@ -392,7 +380,7 @@ void ALog::Log(LPCTSTR description, INT i1)
 	ASSERT(pos[1] == 'd' || pos[1] == 'u' || pos[1] == 'c' || pos[1] == 'x' || pos[1] == 'X');
 	ASSERT(_tcschr(&pos[1], '%') == NULL);
 #endif
-	LogUnsecure(description, i1);
+	LogUnsafe(description, i1);
 }
 void ALog::Log(LPCTSTR description, LPCTSTR s1, LPCTSTR s2)
 {
@@ -405,7 +393,7 @@ void ALog::Log(LPCTSTR description, LPCTSTR s1, LPCTSTR s2)
 	ASSERT(pos[1] == 's');
 	ASSERT(_tcschr(&pos[1], '%') == NULL);
 #endif
-	LogUnsecure(description, s1, s2);
+	LogUnsafe(description, s1, s2);
 
 }
 void ALog::Log(LPCTSTR description, INT i1, INT i2)
@@ -419,7 +407,7 @@ void ALog::Log(LPCTSTR description, INT i1, INT i2)
 	ASSERT(pos[1] == 'd' || pos[1] == 'c');
 	ASSERT(_tcschr(&pos[1], '%') == NULL);
 #endif
-	LogUnsecure(description, i1, i2);
+	LogUnsafe(description, i1, i2);
 
 }
 void ALog::Log(LPCTSTR description, LPCTSTR s1, INT i2)
@@ -433,7 +421,7 @@ void ALog::Log(LPCTSTR description, LPCTSTR s1, INT i2)
 	ASSERT(pos[1] == 'd');
 	ASSERT(_tcschr(&pos[1], '%') == NULL);
 #endif
-	LogUnsecure(description, s1, i2);
+	LogUnsafe(description, s1, i2);
 
 }
 void ALog::Log(LPCTSTR description, INT i1, LPCTSTR s2)
@@ -447,7 +435,7 @@ void ALog::Log(LPCTSTR description, INT i1, LPCTSTR s2)
 	ASSERT(pos[1] == 's');
 	ASSERT(_tcschr(&pos[1], '%') == NULL);
 #endif
-	LogUnsecure(description, i1, s2);
+	LogUnsafe(description, i1, s2);
 
 }
 
@@ -475,11 +463,11 @@ void ALog::LogHWND(LPCTSTR description, HWND hwnd)
 	_sntprintf(bf, 1000, _T("%s\r\n\tCLS:'%s'\r\n\tTXT:'%s'\r\n\thwnd:%d\r\n"), 
 		description, clsName, ttlName, hwnd);
 	bf[999] = 0;
-	LogUnsecure(bf);
+	LogUnsafe(bf);
 }
 
 
-void ALog::LogUnsecure(LPCTSTR description, ...)
+void ALog::LogUnsafe(LPCTSTR description, ...)
 {
 	if (m_pViewer == NULL)
 		return ;
@@ -522,14 +510,19 @@ void ALog::LogUnsecure(LPCTSTR description, ...)
 	if (GetOption(LO_AlwaysCheckForLastError) && !(messageDepth == MD_System))
 	{
 		DWORD dwLastError = GetLastError();
-		if (
-			dwLastError == 2 ||	//"The system cannot find the file specified"
-			dwLastError == 3 ||	//"The system cannot find the path specified"
-			dwLastError == 6 || //"The handle is invalid"
-			dwLastError == 18)	//"There are no more files"
+		switch (dwLastError)
 		{
+		case 2://"The system cannot find the file specified"
+		case 3://"The system cannot find the path specified"
+		case 6://"The handle is invalid"
+		case 18://"There are no more files"
+		case 299://"Invalid access to memory location" sometimes when we are setting a map eg mapobj[45] = "rer" and 45 does not exist
+		case 998://"Invalid access to memory location" sometimes when we are setting a map eg mapobj[45] = "rer" and 45 does not exist
 			SetLastError(0);
 			dwLastError = 0;
+			break;
+		default:
+			break;
 		}
 		if (dwLastError)
 		{
@@ -614,26 +607,6 @@ void ALog::LogUnsecure(LPCTSTR description, ...)
 					curLen += _sntprintf(&message[curLen], mLen - curLen, _T("LastError: 'Unknown' : %d\r\n\t"), dwLastError);
 			}
 			break;
-#ifdef USE_CPUTICKER
-		case 'T':	//=== Mark - Measure Time
-			//TRACE("@T"); ==> silent (no message). Just marks the time
-			//TRACE("@T Class-Function.", x,y,z); ==> [M:Measured Time xxx.xx ms]
-			//Also TRACE("@T") for silent (no message)
-			{
-				if (m_pTicker == NULL)
-					m_pTicker = new CCPUTicker;
-				__int64 curTime = m_pTicker->Measure();
-				__int64 passedTime = curTime - m_markedTime;
-				m_markedTime = curTime;
-				pos++;
-				if (*pos == 0)
-					return;//Do NOT SHOW THIS MESSAGE
-				curLen += _sntprintf(&message[curLen], mLen - curLen, _T("[T: %6.5f ms]"),
-					(passedTime * 1000.0) / CCPUTicker::GetCachedCPUFrequency());
-				message[mLen - 1] = 0;
-			}
-			break;
-#endif
 		case 'I':
 			{
 				pos++;
@@ -669,7 +642,7 @@ void ALog::LogUnsecure(LPCTSTR description, ...)
 		curLen--;
 	}
 	if (GetOption(LO_ShowTimeFromStartup))
-		curLen += _sntprintf(&message[curLen], mLen - curLen, _T("%08.3fms "), (GetTickCount() - m_StartupTicks)/1000.0);
+		curLen += _sntprintf(&message[curLen], mLen - curLen, _T("%08.3fms "), m_timer.Elapsed());
 	if (GetOption(LO_ShowThreadID))
 	{
 		DWORD threadID = ::GetCurrentThreadId();
@@ -709,36 +682,35 @@ AViewer* ALog::GetAutoViewer()
 	//-----------------------------------------------
 	//Check to see if ALogDebugger is already started
 	//If it is is then log there anyway
-	HWND hwndALogDebugger = FindWindow(NULL, _T("ALogDebugger2"));
+	HWND hwndALogDebugger = FindWindow(NULL, _T("ALogDebugger"));
 	if (hwndALogDebugger == NULL)
 	{
 		//----------------------------------------------------------
-		//ALogDebugger is not started. Try to start it automatically
-		HKEY hKey;
-		LONG ret = ::RegOpenKey(HKEY_CURRENT_USER, _T("Software\\AlogDebugger2"), &hKey);
-		if (ret == ERROR_SUCCESS)
+		//ALogDebugger is not started. Try to start it automatically.
+		//		It should reside in the same directory as the exe
+		TCHAR path[MAX_PATH];
+		GetModuleFileName(NULL, path, MAX_PATH);
+		LPTSTR pos = _tcsrchr(path, _T('\\'));
+		pos[1] = 0;
+		_tcscat(path, _T("ALogDebugger.exe"));
+		STARTUPINFO sI;
+		memset(&sI, 0, sizeof(STARTUPINFO));
+		sI.cb = sizeof(STARTUPINFO);
+		sI.wShowWindow = SW_SHOWDEFAULT;
+		PROCESS_INFORMATION pI;
+		if (CreateProcess(path, NULL, NULL, NULL, FALSE, NULL, NULL, NULL,&sI, &pI))
 		{
-			TCHAR path[MAX_PATH];
-			DWORD len = MAX_PATH * sizeof(TCHAR);
-			ret = ::RegQueryValueEx(hKey,
-				_T("Path"),
-				0,
-				NULL,
-				(LPBYTE) path,
-				&len);
-			::RegCloseKey(hKey);
-			if (ret == ERROR_SUCCESS)
+			DWORD startTick = GetTickCount();
+			while (TRUE)
 			{
-				STARTUPINFO sI;
-				memset(&sI, 0, sizeof(STARTUPINFO));
-				sI.cb = sizeof(STARTUPINFO);
-				sI.wShowWindow = SW_SHOWDEFAULT;
-				PROCESS_INFORMATION pI;
-				if (CreateProcess(path, NULL, NULL, NULL, FALSE, NULL, NULL, NULL,&sI, &pI))
-				{
-					Sleep(1000);
-					hwndALogDebugger = FindWindow(NULL, _T("ALogDebugger2"));
-				}
+				hwndALogDebugger = FindWindow(NULL, _T("ALogDebugger"));
+				if (hwndALogDebugger != 0)
+					break;
+				if (GetTickCount() - startTick > 1000)
+					break;
+				Sleep(10);
+
+
 			}
 		}
 	}
